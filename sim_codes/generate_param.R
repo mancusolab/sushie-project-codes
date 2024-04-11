@@ -140,37 +140,6 @@ dd2 <- tt %>%
 
 write_tsv(dd2, file="./param/param_3pop.tsv", col_names = FALSE, escape = "none")
 
-
-# no shared
-N <- c("400:200", "400:400", "400:600", "400:800")
-L1 <- 0
-L2 <- 2
-L3 <- 2
-h2g <- "0.05:0.05"
-rho <- "0.8"
-tt1 <- crossing(N, L1, L2, L3, h2g, rho)
-
-N <- "400:400"
-L1 <- 0
-L2 <- 2
-L3 <- 2
-h2g <- c("0.05:0.01", "0.05:0.05", "0.05:0.1", "0.05:0.2")
-rho <- "0.8"
-tt2 <- crossing(N, L1, L2, L3, h2g, rho)
-
-tt <- bind_rows(tt1, tt2) %>%
-  distinct() %>%
-  rownames_to_column("ROW") 
-
-dd3 <- tt %>%
-  left_join(crossing(ROW = tt$ROW, LOCUS = 1:500),
-    by = "ROW") %>%
-  mutate(seed = row_number() + 100)  %>%
-  left_join(gene_list, by = "LOCUS")
-
-write_tsv(dd3, file="./param/param_noshared.tsv", col_names = FALSE, escape = "none")
-
-
 # pred
 
 N <- c("200:200", "400:400", "600:600")
