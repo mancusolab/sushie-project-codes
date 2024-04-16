@@ -91,7 +91,9 @@ cp3 <- nrow(distinct(filter(rnaseq_mega, !is.na(snp)), trait)) +
   nrow(distinct(filter(proteins_mega, !is.na(snp)), trait))
 
 cp0 - (cp1 + cp2 + cp3)/3
-(cp0 - (cp1 + cp2 + cp3)/3)/cp0
+cp0 / ( (cp1 + cp2 + cp3)/3)
+# (cp0 - (cp1 + cp2 + cp3)/3)/cp0
+# (cp0 - (cp1 + cp2 + cp3)/3)/((cp1 + cp2 + cp3)/3)
 
 df_count_indep <- rnaseq_cov %>%
   mutate(count = ifelse(is.na(snp),0, 1)) %>%
@@ -142,6 +144,7 @@ df_count_mega <- rnaseq_cov %>%
 tidy(t.test(df_count_mega$sushie, df_count_mega$mega, alternative = "greater"))
 
 (cp0 - cp2)/cp0
+(cp0 / cp2)
 
 df_count <- rnaseq_cov %>%
   mutate(count = ifelse(is.na(snp),0, 1)) %>%
@@ -369,7 +372,8 @@ cp3 <- nrow(distinct(filter(v5_mega, !is.na(snp)), trait)) +
   nrow(distinct(filter(geuvadis_mega, !is.na(snp)), trait))
 
 cp0 - (cp1 + cp2 + cp3)/3
-(cp0 - (cp1 + cp2 + cp3)/3)/cp0
+cp0 /( (cp1 + cp2 + cp3)/3)
+
 
 
 df_count_indep <- v5_cov %>%

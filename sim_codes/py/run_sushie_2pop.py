@@ -65,7 +65,6 @@ def main(args):
 
     rng_key, X, y, bvec, bvec_all, s2e, g, b_covar = hf.simulation_sushie(rng_key, output_dic, N, args.L1, args.L3, h2g,
                                                                           rho)
-    import pdb; pdb.set_trace()
     # perform sushie
     sushie = infer_sushie(Xs=X, ys=y, L=args.L2)
 

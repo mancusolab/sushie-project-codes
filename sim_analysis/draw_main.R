@@ -43,10 +43,16 @@ ddPIP <- pop2_pip %>%
     se = 1.96 * (sd(value) / sqrt(n()))) %>%
   mutate(group = "PIP")
 
-ss1 <-pop2_pip %>%
+cp_pip <- pop2_pip %>%
+  filter(h2g %in% "0.05:0.05" & L1 ==2) %>%
+  filter(L1 == L2 & L3 == 0) %>%
+  filter(N %in% c("200:200", "400:400", "600:600", "800:800")) %>%
   select(sushie, indep, meta, susie, sim, locus, N, L1, L2, L3, h2g, rho) %>%
   pivot_longer(cols = sushie:susie) %>%
   mutate(name = factor(name, levels = c("sushie", "indep", "meta", "susie")))
+
+tidy(lm(value ~ name + L1 + h2g + rho, cp_pip)) %>%
+  mutate(p.value = p.value/2)
 
 pop2_cs <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_2pop_cs.tsv.gz")
 

@@ -6,7 +6,6 @@ library(glue)
 library(ggpubr)
 source("./utils.R")
 
-
 text_size <- 4
 title_size <- 9
 legend_size <- 8
@@ -83,7 +82,7 @@ main_theme_p1 <- function() {
     panel.spacing = unit(0.5, "lines"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
-    axis.text = element_text(face = "bold", size = 7))
+    axis.text = element_text(face = "bold", size = 9))
 }
 
 mp1 <- ggplot(df_qtl, aes(x=new_n, y=perc_val, fill = study)) +
@@ -162,40 +161,6 @@ encode_list <- c("PLS", "pELS", "dELS", "CTCF-bound", "DNase-H3K4me3")
 atac_list <- enrich_list[!enrich_list %in% c(ldsc_list,
   encode_list, "snATAC-seq-frozen-peaks", "megakaryocyte")]
 
-# rnaseq_enrich %>%
-#   filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-#   filter(converged == 1 & reg == 0) %>%
-#   filter(method %in% "pip_cov") %>%
-#   group_by(anno) %>%
-#   mutate(weight = 1 / (se*2)) %>%
-#   summarize(meta_est = sum(est*weight)/sum(weight),
-#     meta_se = 1 / sqrt(sum(weight))) %>%
-#   bind_rows(
-#     proteins_enrich %>%
-#       filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-#       filter(converged == 1 & reg == 0) %>%
-#       filter(method %in% "pip_cov") %>%
-#       group_by(anno) %>%
-#       mutate(weight = 1 / (se*2)) %>%
-#       summarize(meta_est = sum(est*weight)/sum(weight),
-#         meta_se = 1 / sqrt(sum(weight))),
-#     genoa_enrich %>%
-#       filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-#       filter(converged == 1 & reg == 0) %>%
-#       filter(method %in% "pip_cov") %>%
-#       group_by(anno) %>%
-#       mutate(weight = 1 / (se*2)) %>%
-#       summarize(meta_est = sum(est*weight)/sum(weight),
-#         meta_se = 1 / sqrt(sum(weight)))
-#   ) %>%
-#   ungroup() %>%
-#   mutate(weight = 1 / (meta_se*2)) %>%
-#   summarize(meta_est = sum(meta_est*weight)/sum(weight),
-#     meta_se = 1 / sqrt(sum(weight)),
-#     or = exp(meta_est),
-#     z = meta_est/meta_se,
-#     p = 2*pnorm(abs(z), lower.tail = FALSE))
-
 rnaseq_anno <- rnaseq_enrich %>%
   filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
   filter(converged == 1 & reg == 0) %>%
@@ -241,7 +206,6 @@ genoa_anno <- genoa_enrich %>%
     upp_int = (meta_est + 1.96*meta_se)/log(2),
     n = n()) %>%
   mutate(study = "GENOA mRNA")
-
 
 df_anno <- rnaseq_anno %>%
   bind_rows(proteins_anno, genoa_anno) %>%
@@ -312,7 +276,6 @@ main1 <- ggarrange(mp1, mp2, mp3, align = "h", nrow=1,
 
 # ggsave("./plots/p3.png", , width = p_width, height = p_height+1)
 
-
 mp4 <- ggplot(enrich_res,
   aes(x = reorder(anno, log_est, decreasing = TRUE),
     y = log_est, color=study)) +
@@ -337,9 +300,9 @@ mp4 <- ggplot(enrich_res,
     axis.title.y = element_text(face="bold", size = 8),
     axis.title.x = element_text(face="bold", size = 8,
       margin = margin(t = 10, r = 0, b = 0, l = 0)),
-    axis.text = element_text(face = "bold", size = 7))
+    axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s11.png", , width = p_width, height = p_height+1)
+# ggsave("./plots/s11.png", , width = p_width-1, height = p_height)
 
 # alpha tss
 df_pip <- rnaseq_tss %>%
@@ -372,9 +335,9 @@ ggplot(df_pip, aes(x = bins, y = avg_signal, color=study)) +
     panel.spacing = unit(0.5, "lines"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s12.png", , width = p_width, height = p_height+2)
+# ggsave("./plots/s12.png", , width = p_width-1.5, height = p_height+2)
 
 # single effect enrichment
 
@@ -483,7 +446,7 @@ m1 <- ggplot(anno_alpha_encode,
     panel.spacing = unit(0.5, "lines"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 8))
 
 m2 <- ggplot(anno_alpha_chiou,
   aes(x = reorder(anno, log_est, decreasing = TRUE),
@@ -509,12 +472,12 @@ m2 <- ggplot(anno_alpha_chiou,
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title.x=element_text(face="bold", size = 8),
     axis.title.y=element_blank(),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 8))
 
 ggarrange(m1, m2, nrow=1, widths=c(1,2), align = "h", common.legend = TRUE,
   legend = "bottom")
 
-# ggsave("./plots/s13.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s13.png", , width = p_width+3, height = p_height+5)
 
 
 # creating tables
@@ -1345,7 +1308,7 @@ ggplot(total_dist, aes(x = CSIndex, y = mval, color = study)) +
   facet_grid(rows=vars(study)) +
   scale_color_manual(values = main_study_color) +
   xlab("cis-molQTL Index") +
-  ylab("PIP-weighted Distance") +
+  ylab("Expected Distance to TSS") +
   theme(panel.grid.major.x = element_blank(),
     strip.background = element_blank(),
     panel.background = element_rect(fill = "white"),
@@ -1358,9 +1321,9 @@ ggplot(total_dist, aes(x = CSIndex, y = mval, color = study)) +
     panel.spacing = unit(0.5, "lines"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s13_1.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s14.png", width = p_width-3, height = p_height+3)
 
 
 two_dist <- rnaseq_cov %>%

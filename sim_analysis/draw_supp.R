@@ -205,7 +205,7 @@ general_sim1 <- function(tt1, ylab, colors_type = method_colors) {
       position=position_dodge(width=0.5), width = 0.2) +
     scale_y_continuous(labels=scaleFUN, limits = c(0,1)) +
     ylab(ylab) +
-    xlab("Ancestral effect size correlation") +
+    xlab("Effect size corr. across ancestries") +
     theme_sim()
   
   p <- ggarrange(p2, p3, p4, labels = c("A", "B", "C"), nrow=1,
@@ -231,7 +231,7 @@ df_pip <- pop2_pip %>%
 
 general_sim1(df_pip, "PIP of molQTLs")
 
-# ggsave("./manuscript_plots/supp/s2.png", width = p_width, height = p_height+0.5)
+# ggsave("./manuscript_plots/supp/s2.png", width = p_width+0.4, height = p_height+0.5)
 
 cp_pip <- pop2_pip %>%
   filter(N %in% "400:400") %>%
@@ -244,7 +244,12 @@ cp_pip <- pop2_pip %>%
 tidy(lm(value ~ name + L1 + h2g + rho, cp_pip)) %>%
   mutate(p.value = p.value/2)
 
-tidy(lm(value ~ name + L1 + h2g + rho, cp_pip)) %>%
+all_pip <- pop2_pip %>%
+  select(sushie, indep, meta, susie, sim, locus, N, L1, L2, L3, h2g, rho) %>%
+  pivot_longer(cols = sushie:susie) %>%
+  mutate(name = factor(name, levels = c("sushie", "indep", "meta", "susie")))
+
+tidy(lm(value ~ name + L1 + L2 + L3 + N + h2g + rho, all_pip)) %>%
   mutate(p.value = p.value/2) %>%
   filter(term %in% c("nameindep", "namemeta", "namesusie")) %>%
   select(estimate) %>%
@@ -310,7 +315,7 @@ general_sim2 <- function(tt1, ylab, colors_type = method_colors){
       position=position_dodge(width=0.5), width = 0.2) +
     # scale_y_continuous(labels=scaleFUN, limits = c(0, 7)) +
     ylab(ylab) +
-    xlab("Ancestral effect size correlation") +
+    xlab("Effect size corre. across ancestries") +
     theme_sim()
   
   p <- ggarrange(p2, p3, p4, labels = c("A", "B", "C"), nrow=1,
@@ -336,7 +341,7 @@ df_cs <- pop2_cs %>%
 
 general_sim2(df_cs, "Credible Set Size")
 
-# ggsave("./manuscript_plots/supp/s3.png", width = p_width, height = p_height+0.5)
+# ggsave("./manuscript_plots/supp/s3.png", width = p_width+0.4, height = p_height+0.5)
 
 cp_cs <- pop2_cs %>%
   filter(N %in% "400:400") %>%
@@ -352,9 +357,15 @@ cp_cs <- pop2_cs %>%
 tidy(lm(value ~ name + L1 + h2g + rho, cp_cs)) %>%
   mutate(p.value = p.value/2)
 
-tidy(lm(value ~ name + L1 + h2g + rho, cp_cs)) %>%
+all_cs <- pop2_cs %>%
+  select(sushie, indep, meta, susie, sim, locus, N, L1, L2, L3, h2g, rho) %>%
+  filter(sushie != 0 & indep != 0 & meta != 0 & susie != 0) %>%
+  pivot_longer(cols = sushie:susie) %>%
+  mutate(name = factor(name, levels = c("sushie", "indep", "meta", "susie")))
+
+tidy(lm(value ~ name + L1 + L2 + L3 + N + h2g + rho, all_cs)) %>%
   mutate(p.value = p.value/2) %>%
-  filter(term %in% c("nameSuShiE-Indep", "nameMeta-SuSiE", "nameMega-SuSiE")) %>%
+  filter(term %in% c("nameindep", "namemeta", "namesusie")) %>%
   select(estimate) %>%
   unlist() %>%
   as.numeric() %>%
@@ -393,7 +404,7 @@ df_prop <- pop2_prop %>%
 
 general_sim1(df_prop, "Freq. of molQTLs in CS")
 
-# ggsave("./manuscript_plots/supp/s4.png", width = p_width, height = p_height+0.5)
+# ggsave("./manuscript_plots/supp/s4.png", width = p_width+0.4, height = p_height+0.5)
 
 cp_prop <- pop2_prop %>%
   filter(N %in% "400:400") %>%
@@ -411,8 +422,17 @@ cp_prop <- pop2_prop %>%
 tidy(lm(value ~ name + L1 + h2g + rho, cp_prop)) %>%
   mutate(p.value = p.value/2)
 
+all_prop <- pop2_prop %>%
+  pivot_longer(cols = c(prec)) %>%
+  rename(group = name,
+    name = method) %>%
+  group_by(sim, name, N, L1, L2, L3, h2g, rho, group) %>%
+  mutate(value = value/L2) %>%
+  mutate(name = factor(name,
+    labels = c("SuShiE", "SuShiE-Indep", "Meta-SuSiE", "Mega-SuSiE"),
+    levels = c("sushie", "indep", "meta", "susie")))
 
-tidy(lm(value ~ name + L1 + h2g + rho, cp_prop)) %>%
+tidy(lm(value ~ name + L1 + L2 + L3 + N + h2g + rho, all_prop)) %>%
   mutate(p.value = p.value/2) %>%
   filter(term %in% c("nameSuShiE-Indep", "nameMeta-SuSiE", "nameMega-SuSiE")) %>%
   select(estimate) %>%

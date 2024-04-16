@@ -147,7 +147,7 @@ df_r2_comp <- df_r2 %>%
         se_low = mval - 1.96 * sd(value)/sqrt(n())) %>%
       mutate(type = "heter")) %>%
   mutate(type = factor(type, levels = c("all", "heter"),
-    labels = c("All e/pGenes", "e/pGenes Exhibited Heterogeneity")))
+    labels = c("A: All e/pGenes", "B:e/pGenes Exhibited Heterogeneity")))
 
 ggplot(df_r2_comp,
   aes(x = name, y = mval, color = name)) +
@@ -168,16 +168,11 @@ ggplot(df_r2_comp,
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold"),
     axis.title.x=element_blank(),
-    axis.text.x=element_blank(),
     axis.ticks.x=element_blank(),
     title = element_text(size = 10, face="bold"),
-    axis.text=element_text(size = 8, face="bold"),
-    text=element_text(size = 8))
+    axis.text=element_text(size = 8, face="bold"))
 
 # ggsave("./plots/s23.png", width = p_width, height = p_height)
-
-tidy(lm(value ~ name + study, df_r2_cross))
-
 
 df_r2_cross <- bind_rows(rnaseq_r2,
   proteins_r2,
@@ -224,6 +219,24 @@ ggplot(df_r2_cross, aes(x=name, y = mval, color=name)) +
 
 # ggsave("./plots/s24.png", width = p_width/2, height = p_height)
 
+df_r2_cross2 <- bind_rows(rnaseq_r2,
+  proteins_r2,
+  genoa_r2) %>%
+  filter(type == "r2") %>%
+  select(sushie, cross, type, trait, study) %>%
+  pivot_longer(cols = 1:2) %>%
+  group_by(name) %>%
+  mutate(value = ifelse(is.na(value), 0, value)) %>%
+  mutate(name = factor(name,
+    levels = c("sushie", "cross"),
+    labels = c("Ancestry-matched weights", "Cross-ancestry weights")),
+    study = factor(study,
+      levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
+      labels = c("TOPMed-MESA mRNA",
+        "TOPMed-MESA Proteins",
+        "GENOA mRNA")))
+
+tidy(lm(value ~ name + study, df_r2_cross2))
 
 rnaseq_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.sushie_cs.tsv.gz") %>%
   filter(!is.na(snp)) %>%
@@ -476,6 +489,7 @@ mega_twas %>%
   summarize(n = n())
 
 221-177
+221/177
 
 cov_twas %>%
   filter(study != "mesa.proteins") %>%

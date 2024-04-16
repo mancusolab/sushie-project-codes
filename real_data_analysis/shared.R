@@ -182,8 +182,8 @@ p1 <- ggplot(filter(rnaseq_her, ancestry == 1 & trait %in% rnaseq_genes$trait),
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p2 <- ggplot(filter(rnaseq_her, ancestry == 2  & trait %in% rnaseq_genes$trait),
   aes(x = h2g)) +
@@ -199,8 +199,8 @@ p2 <- ggplot(filter(rnaseq_her, ancestry == 2  & trait %in% rnaseq_genes$trait),
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p3 <- ggplot(filter(rnaseq_her, ancestry == 3  & trait %in% rnaseq_genes$trait),
   aes(x = h2g)) +
@@ -216,8 +216,8 @@ p3 <- ggplot(filter(rnaseq_her, ancestry == 3  & trait %in% rnaseq_genes$trait),
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 
 p4 <- ggplot(filter(proteins_her, ancestry == 1  & trait %in% proteins_genes$trait),
@@ -234,8 +234,8 @@ p4 <- ggplot(filter(proteins_her, ancestry == 1  & trait %in% proteins_genes$tra
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p5 <- ggplot(filter(proteins_her, ancestry == 2  & trait %in% proteins_genes$trait),
   aes(x = h2g)) +
@@ -251,8 +251,8 @@ p5 <- ggplot(filter(proteins_her, ancestry == 2  & trait %in% proteins_genes$tra
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p6 <- ggplot(filter(proteins_her, ancestry == 3  & trait %in% proteins_genes$trait),
   aes(x = h2g)) +
@@ -268,8 +268,8 @@ p6 <- ggplot(filter(proteins_her, ancestry == 3  & trait %in% proteins_genes$tra
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p7 <- ggplot(filter(genoa_her, ancestry == 1 & trait %in% genoa_genes$trait),
   aes(x = h2g)) +
@@ -285,8 +285,8 @@ p7 <- ggplot(filter(genoa_her, ancestry == 1 & trait %in% genoa_genes$trait),
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p8 <- ggplot(filter(genoa_her, ancestry == 2  & trait %in% genoa_genes$trait),
   aes(x = h2g)) +
@@ -302,8 +302,8 @@ p8 <- ggplot(filter(genoa_her, ancestry == 2  & trait %in% genoa_genes$trait),
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 ggarrange(p1, p2, p3, p4, p5, p6, p7, p8,
   nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
@@ -328,8 +328,8 @@ p1 <- ggplot(df_rnaseq_her, aes(x = ancestry_1,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 slo <- tidy(lm(df_rnaseq_her$ancestry_1 ~ df_rnaseq_her$ancestry_3))[2,2]$estimate
 
@@ -347,8 +347,8 @@ p2 <- ggplot(df_rnaseq_her, aes(x = ancestry_1,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 slo <- tidy(lm(df_rnaseq_her$ancestry_2 ~ df_rnaseq_her$ancestry_3))[2,2]$estimate
 
@@ -366,8 +366,8 @@ p3 <- ggplot(df_rnaseq_her, aes(x = ancestry_1,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 slo <- tidy(lm(df_proteins_her$ancestry_1 ~ df_proteins_her$ancestry_2))[2,2]$estimate
 
@@ -385,8 +385,8 @@ p4 <- ggplot(df_proteins_her, aes(x = ancestry_1,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 slo <- tidy(lm(df_proteins_her$ancestry_1 ~ df_proteins_her$ancestry_3))[2,2]$estimate
 
@@ -404,8 +404,8 @@ p5 <- ggplot(df_proteins_her, aes(x = ancestry_1,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 slo <- tidy(lm(df_proteins_her$ancestry_2 ~ df_proteins_her$ancestry_3))[2,2]$estimate
 
@@ -423,8 +423,8 @@ p6 <- ggplot(df_proteins_her, aes(x = ancestry_2,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 slo <- tidy(lm(df_genoa_her$ancestry_1 ~ df_genoa_her$ancestry_2))[2,2]$estimate
 
@@ -442,8 +442,8 @@ p7 <- ggplot(df_proteins_her, aes(x = ancestry_1,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 ggarrange(p1, p2, p3, p4, p5, p6, p7,
   nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G"),
@@ -460,8 +460,6 @@ tidy(cor.test(
 tidy(cor.test(
   c(df_rnaseq_her$ancestry_3, df_proteins_her$ancestry_3),
   c(df_rnaseq_her$ancestry_2, df_proteins_her$ancestry_2)))
-
-
 
 # ggsave("./plots/s16.png", width = p_width+1, height = p_height+5)
 
@@ -512,7 +510,7 @@ pp1 <- ggplot(filter(df_corr, name == "ancestry1_ancestry2"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
     axis.title.x=element_blank(),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 7))
 
 pp2 <- ggplot(filter(df_corr, name == "ancestry1_ancestry3"),
   aes(x = type, y = corr, color = study)) +
@@ -534,7 +532,7 @@ pp2 <- ggplot(filter(df_corr, name == "ancestry1_ancestry3"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
     axis.title.x=element_blank(),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 7))
 
 pp3 <- ggplot(filter(df_corr, name == "ancestry2_ancestry3"),
   aes(x = type, y = corr, color = study)) +
@@ -556,7 +554,7 @@ pp3 <- ggplot(filter(df_corr, name == "ancestry2_ancestry3"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 8),
     axis.title.x=element_blank(),
-    axis.text = element_text(face = "bold", size = 5))
+    axis.text = element_text(face = "bold", size = 7))
 
 
 ggarrange(pp1, pp2, pp3, nrow=3, align = "v", label.y = 0.95, label.x = 0.05,
@@ -564,7 +562,7 @@ ggarrange(pp1, pp2, pp3, nrow=3, align = "v", label.y = 0.95, label.x = 0.05,
   font.label = list(size = 10),
   legend = "bottom", common.legend = TRUE)
 
-# ggsave("./plots/s17.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s17.png", width = p_width-3, height = p_height+3)
 
 # all
 bind_rows(rnaseq_corr %>%
@@ -717,9 +715,8 @@ p1 <- ggplot(rnaseq_w, aes(x = ancestry1_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
-
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p2 <- ggplot(rnaseq_w, aes(x = ancestry1_sushie_weight,
   y = ancestry3_sushie_weight)) +
@@ -733,8 +730,8 @@ p2 <- ggplot(rnaseq_w, aes(x = ancestry1_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p3 <- ggplot(rnaseq_w, aes(x = ancestry2_sushie_weight,
   y = ancestry3_sushie_weight)) +
@@ -748,8 +745,8 @@ p3 <- ggplot(rnaseq_w, aes(x = ancestry2_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p4 <- ggplot(proteins_w, aes(x = ancestry1_sushie_weight,
   y = ancestry2_sushie_weight)) +
@@ -763,8 +760,8 @@ p4 <- ggplot(proteins_w, aes(x = ancestry1_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p5 <- ggplot(proteins_w, aes(x = ancestry1_sushie_weight,
   y = ancestry3_sushie_weight)) +
@@ -778,8 +775,8 @@ p5 <- ggplot(proteins_w, aes(x = ancestry1_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p6 <- ggplot(proteins_w, aes(x = ancestry2_sushie_weight,
   y = ancestry3_sushie_weight)) +
@@ -793,8 +790,8 @@ p6 <- ggplot(proteins_w, aes(x = ancestry2_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 p7 <- ggplot(genoa_w, aes(x = ancestry1_sushie_weight,
   y = ancestry2_sushie_weight)) +
@@ -808,8 +805,8 @@ p7 <- ggplot(genoa_w, aes(x = ancestry1_sushie_weight,
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    text=element_text(size = 6))
+    axis.title=element_text(face="bold", size=7),
+    axis.text=element_text(size = 7, face="bold"))
 
 ggarrange(p1, p2, p3, p4, p5, p6, p7,
   nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G"),
@@ -864,12 +861,8 @@ ggplot(df_dens, aes(x = value, color = study, fill = study)) +
     legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title.x=element_text(face="bold"),
     legend.position = "bottom",
-    # axis.title.y=element_blank(),
-    # axis.text.y=element_blank(),
-    # axis.ticks.y = element_blank(),
     title = element_text(size = 10, face="bold"),
-    axis.text=element_text(size = 8, face="bold"),
-    text=element_text(size = 8))
+    axis.text=element_text(size = 8, face="bold"))
 
 # ggsave("./plots/s19.png", , width = p_width+1, height = p_height+5)
 
@@ -984,7 +977,7 @@ df_rnaseq_corr %>%
   group_by(group) %>%
   summarize(mval = mean(corr),
     sdval = sd(corr)/sqrt(n()))
-      
+
 
 df_rnaseq_corr <- rnaseq_corr %>%
   inner_join(rnaseq_cov %>%
@@ -1132,7 +1125,7 @@ for (n_time in 1:100) {
 
 # write_tsv(btsp_res, "~/Downloads/btsp_res.tsv")
 
-btsp_res <- read_tsv("~/Downloads/btsp_res.tsv")
+btsp_res <- read_tsv("~/Documents/github/data/sushie_results/real/btsp_res.tsv")
 btsp_comp <- normal_comp %>%
   left_join(
     btsp_res %>%
@@ -1152,7 +1145,7 @@ total_comp <- normal_comp %>%
       mutate(type="Effect Covariance"),
     fst_comp %>%
       mutate(type="Adjusted Fst")) %>%
-  mutate(p.value = formatC(p.value, format = "E", digits = 2),
+  mutate(p.value = formatC(p.value, format = "e", digits = 2),
     estimate = formatC(estimate, format = "f", digits = 3),
     res = paste0(estimate," (", p.value, ")")) %>%
   select(score, type, res) %>%
@@ -1161,6 +1154,7 @@ total_comp <- normal_comp %>%
     "Bootstrap SE", "Primary Effect", "Effect Covariance", "Adjusted Fst"))) %>%
   select(type, pLI, LOEUF, s_het, RVIS, EDS)
 
+write_tsv(total_comp, "~/Downloads/table1.tsv")
 library(gt)
 
 total_comp |>
@@ -1178,7 +1172,7 @@ total_comp |>
   ) |>
   cols_width(type ~ px(150),
     everything() ~ px(200)) |>
-  gtsave("tab_1.docx")
+  gtsave("tab_1.rtf")
 
 # heritability vs constraint
 
@@ -1355,7 +1349,7 @@ for (n_time in 1:100) {
 }
 # write_tsv(btsp_res2, "~/Downloads/btsp_res2.tsv")
 
-btsp_res2 <- read_tsv("~/Downloads/btsp_res2.tsv")
+btsp_res2 <- read_tsv("~/Documents/github/data/sushie_results/real/btsp_res2.tsv")
 
 df_text <- df_all %>%
   nest_by(type, score) %>%
@@ -1376,10 +1370,14 @@ df_text <- df_all %>%
   select(type, score, label)
 
 df_n_qtl <- df_all %>%
-  filter(type == "Number of molQTLs")
+  filter(type == "Number of molQTLs") %>%
+  mutate(score = factor(score, levels = c("pLI", "LOEUF",
+    "s_het", "RVIS", "EDS")))
 
 df_n_qtl_text <- df_text %>%
-  filter(type == "Number of molQTLs")
+  filter(type == "Number of molQTLs") %>%
+  mutate(score = factor(score, levels = c("pLI", "LOEUF",
+    "s_het", "RVIS", "EDS")))
 
 ggplot(df_n_qtl, aes(x = stats, y = value)) +
   geom_bin_2d(bins=200) +
@@ -1408,10 +1406,16 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
 # ggsave("./plots/s20.png", width = p_width/1.75, height = p_height+1)
 
 df_n_qtl <- df_all %>%
-  filter(type == "PIP-weighted Distance (kb) to TSS")
+  filter(type == "PIP-weighted Distance (kb) to TSS") %>%
+  mutate(score = factor(score, levels = c("pLI", "LOEUF",
+    "s_het", "RVIS", "EDS")),
+    type = "Expected Distance (kb) to TSS")
 
 df_n_qtl_text <- df_text %>%
-  filter(type == "PIP-weighted Distance (kb) to TSS")
+  filter(type == "PIP-weighted Distance (kb) to TSS") %>%
+  mutate(score = factor(score, levels = c("pLI", "LOEUF",
+    "s_het", "RVIS", "EDS")),
+    type = "Expected Distance (kb) to TSS")
 
 ggplot(df_n_qtl, aes(x = stats, y = value)) +
   geom_bin_2d(bins=200) +
@@ -1442,10 +1446,16 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
 df_n_qtl <- df_all %>%
   filter(grepl("Enrich", type)) %>%
   mutate(type = factor(type, levels = c("PLS Log Enrichment",
-  "pELS Log Enrichment", "dELS Log Enrichment")))
+    "pELS Log Enrichment", "dELS Log Enrichment")),
+    score = factor(score, levels = c("pLI", "LOEUF",
+      "s_het", "RVIS", "EDS")))
 
 df_n_qtl_text <- df_text %>%
-  filter(grepl("Enrich", type))
+  filter(grepl("Enrich", type)) %>%
+  mutate(type = factor(type, levels = c("PLS Log Enrichment",
+    "pELS Log Enrichment", "dELS Log Enrichment")),
+    score = factor(score, levels = c("pLI", "LOEUF",
+      "s_het", "RVIS", "EDS")))
 
 ggplot(df_n_qtl, aes(x = stats, y = value)) +
   geom_bin_2d(bins=200) +
