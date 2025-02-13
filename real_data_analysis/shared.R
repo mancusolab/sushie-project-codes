@@ -4,18 +4,18 @@ library(ggpubr)
 
 source("./utils.R")
 
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.sushie_cs.tsv.gz") 
+rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz") 
 
-proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.sushie_cs.tsv.gz") 
+proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz") 
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.sushie_cs.tsv.gz")
+genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
 
-rnaseq_her <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_her.tsv.gz")
+rnaseq_her <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_her.tsv.gz")
 
 proteins_her <-
-  read_tsv("~/Documents/github/data/sushie_results/real/proteins_her.tsv.gz")
+  read_tsv("~/Documents/github/data/sushie_results/real2/proteins_her.tsv.gz")
 
-genoa_her <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_her.tsv.gz")
+genoa_her <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_her.tsv.gz")
 
 # get legend
 rnaseq_qtl <- rnaseq_cov %>%
@@ -93,7 +93,6 @@ mp1 <- ggplot(df_qtl, aes(x=new_n, y=perc_val, fill = study)) +
   main_theme_p1()
 
 leg <- get_legend(mp1, position = "bottom")
-
 
 rnaseq_genes <- rnaseq_cov %>%
   filter(!is.na(snp)) %>%
@@ -219,7 +218,6 @@ p3 <- ggplot(filter(rnaseq_her, ancestry == 3  & trait %in% rnaseq_genes$trait),
     axis.title=element_text(face="bold", size=7),
     axis.text=element_text(size = 7, face="bold"))
 
-
 p4 <- ggplot(filter(proteins_her, ancestry == 1  & trait %in% proteins_genes$trait),
   aes(x = h2g)) +
   geom_histogram(bins=100, fill = main_study_color[2]) +
@@ -309,8 +307,7 @@ ggarrange(p1, p2, p3, p4, p5, p6, p7, p8,
   nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
   legend.grob = leg, legend = "bottom")
 
-# ggsave("./plots/s15.png", , width = p_width+1, height = p_height+5)
-
+# ggsave("./plots/s17.png", width = p_width+1, height = p_height+5)
 
 slo <- tidy(lm(df_rnaseq_her$ancestry_1 ~ df_rnaseq_her$ancestry_2))[2,2]$estimate
 
@@ -461,16 +458,16 @@ tidy(cor.test(
   c(df_rnaseq_her$ancestry_3, df_proteins_her$ancestry_3),
   c(df_rnaseq_her$ancestry_2, df_proteins_her$ancestry_2)))
 
-# ggsave("./plots/s16.png", width = p_width+1, height = p_height+5)
+# ggsave("./plots/s18.png", width = p_width+1, height = p_height+5)
 
 # correlation
 rnaseq_corr <-
-  read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_corr.tsv.gz")
+  read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_corr.tsv.gz")
 
 proteins_corr <-
-  read_tsv("~/Documents/github/data/sushie_results/real/proteins_corr.tsv.gz")
+  read_tsv("~/Documents/github/data/sushie_results/real2/proteins_corr.tsv.gz")
 
-genoa_corr <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_corr.tsv.gz")
+genoa_corr <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_corr.tsv.gz")
 
 df_corr <- prepare_corr(rnaseq_corr %>%
     filter(trait %in% rnaseq_genes$trait), rnaseq_her, 3) %>%
@@ -562,7 +559,7 @@ ggarrange(pp1, pp2, pp3, nrow=3, align = "v", label.y = 0.95, label.x = 0.05,
   font.label = list(size = 10),
   legend = "bottom", common.legend = TRUE)
 
-# ggsave("./plots/s17.png", width = p_width-3, height = p_height+3)
+# ggsave("./plots/s19.png", width = p_width-3, height = p_height+3)
 
 # all
 bind_rows(rnaseq_corr %>%
@@ -666,7 +663,7 @@ rnaseq_cov %>%
   summarize(n = n(),
     ss = sum(sig))
 
-9885/21088
+9822/19881
 # scatter plots
 # set.seed(123)
 # tmp_weight <- rnaseq_her %>%
@@ -677,7 +674,7 @@ rnaseq_cov %>%
 #   distinct(trait)
 # 
 # tmp_weight <- tmp_weight[sample(1:nrow(tmp_weight), 100, replace = FALSE),]
-# write_tsv(tmp_weight , "~/USCHPC/trash/case/rnaseq_weights.tsv", col_names = FALSE)
+# write_tsv(tmp_weight , "~/Downloads/rnaseq_weights.tsv", col_names = FALSE)
 # 
 # tmp_weight <- proteins_her %>%
 #   filter(trait %in% proteins_genes$trait) %>%
@@ -687,7 +684,7 @@ rnaseq_cov %>%
 #   distinct(trait)
 # 
 # tmp_weight <- tmp_weight[sample(1:nrow(tmp_weight), 100, replace = FALSE),]
-# write_tsv(tmp_weight , "~/USCHPC/trash/case/proteins_weights.tsv", col_names = FALSE)
+# write_tsv(tmp_weight , "~/Downloads/proteins_weights.tsv", col_names = FALSE)
 # 
 # tmp_weight <- genoa_her %>%
 #   filter(trait %in% genoa_genes$trait) %>%
@@ -697,11 +694,11 @@ rnaseq_cov %>%
 #   distinct(trait)
 # 
 # tmp_weight <- tmp_weight[sample(1:nrow(tmp_weight), 100, replace = FALSE),]
-# write_tsv(tmp_weight , "~/USCHPC/trash/case/genoa_weights.tsv", col_names = FALSE)
+# write_tsv(tmp_weight , "~/Downloads/genoa_weights.tsv", col_names = FALSE)
 
-rnaseq_w <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_weights.tsv.gz")
-proteins_w <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_weights.tsv.gz")
-genoa_w <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_weights.tsv.gz")
+rnaseq_w <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_weights.tsv.gz")
+proteins_w <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_weights.tsv.gz")
+genoa_w <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_weights.tsv.gz")
 
 p1 <- ggplot(rnaseq_w, aes(x = ancestry1_sushie_weight,
   y = ancestry2_sushie_weight)) +
@@ -812,7 +809,7 @@ ggarrange(p1, p2, p3, p4, p5, p6, p7,
   nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G"),
   legend.grob = leg, legend = "bottom")
 
-# ggsave("./plots/s18.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s20.png", , width = p_width+1, height = p_height+5)
 
 # correlation heterogenity
 
@@ -864,12 +861,12 @@ ggplot(df_dens, aes(x = value, color = study, fill = study)) +
     title = element_text(size = 10, face="bold"),
     axis.text=element_text(size = 8, face="bold"))
 
-# ggsave("./plots/s19.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s21.png", , width = p_width+1, height = p_height+5)
 
 df_eds <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_eds.tsv")
 df_pli <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_pli_new.tsv")
 df_rvis <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_rvis.tsv")
-df_shet <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_shet.tsv")
+df_shet <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_shet_new.tsv")
 
 df_scores <- df_eds %>% 
   mutate(score = "EDS") %>%
@@ -919,7 +916,7 @@ df_qtl <- bind_rows(rnaseq_qtl, proteins_qtl, genoa_qtl) %>%
 
 # constraint analysis preparation
 # fst info
-rnaseq_fst <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_fst.all_snp.tsv.gz") %>%
+rnaseq_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_fst.all_snp.tsv.gz") %>%
   mutate(pop1 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "EUR", `#POP1`),
     pop2 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "AFR", POP2),
     type = ifelse(pop1 == "EUR" & pop2 == "AFR", "ancestry1_ancestry2_est_corr",
@@ -931,7 +928,7 @@ rnaseq_fst <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_fst.a
   mutate(type = gsub("_est_corr", "", type))
 
 # proteins
-proteins_fst <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_fst.all_snp.tsv.gz") %>%
+proteins_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_fst.all_snp.tsv.gz") %>%
   mutate(pop1 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "EUR", `#POP1`),
     pop2 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "AFR", POP2),
     type = ifelse(pop1 == "EUR" & pop2 == "AFR", "ancestry1_ancestry2_est_corr",
@@ -943,7 +940,7 @@ proteins_fst <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_f
   mutate(type = gsub("_est_corr", "", type))
 
 # genoa
-genoa_fst <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_fst.all_snp.tsv.gz") %>%
+genoa_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_fst.all_snp.tsv.gz") %>%
   mutate(pop1 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "EUR", `#POP1`),
     pop2 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "AFR", POP2),
     type = "ancestry1_ancestry2_est_corr",
@@ -952,7 +949,6 @@ genoa_fst <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_fst.all
   mutate(type = gsub("_est_corr", "", type))
 
 all_fst <- bind_rows(rnaseq_fst, proteins_fst, genoa_fst) 
-
 
 # corr info
 df_rnaseq_corr <- rnaseq_corr %>%
@@ -978,7 +974,6 @@ df_rnaseq_corr %>%
   summarize(mval = mean(corr),
     sdval = sd(corr)/sqrt(n()))
 
-
 df_rnaseq_corr <- rnaseq_corr %>%
   inner_join(rnaseq_cov %>%
       filter(!is.na(snp)) %>%
@@ -988,7 +983,6 @@ df_rnaseq_corr <- rnaseq_corr %>%
   rename(type = name, corr = value) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, type, CSIndex, corr)
-
 
 df_rnaseq_covar <- rnaseq_corr %>%
   inner_join(rnaseq_cov %>%
@@ -1062,7 +1056,6 @@ normal_comp <- df_comp %>%
   mutate(p.value = p.value/2) %>%
   select(score, estimate, p.value)
 
-
 l1_comp <- df_comp %>%
   filter(CSIndex == 1) %>%
   nest_by(score) %>%
@@ -1079,7 +1072,6 @@ fst_comp <- df_comp %>%
   filter(term == "corr")  %>%
   mutate(p.value = p.value/2)  %>%
   select(score, estimate, p.value)
-
 
 covar_comp <- df_comp %>%
   nest_by(score) %>%
@@ -1123,9 +1115,9 @@ for (n_time in 1:100) {
         mutate(times = n_time))
 }
 
-# write_tsv(btsp_res, "~/Downloads/btsp_res.tsv")
+# write_tsv(btsp_res, "~/Documents/github/data/sushie_results/real2/btsp_res.tsv")
 
-btsp_res <- read_tsv("~/Documents/github/data/sushie_results/real/btsp_res.tsv")
+btsp_res <- read_tsv("~/Documents/github/data/sushie_results/real2/btsp_res.tsv")
 btsp_comp <- normal_comp %>%
   left_join(
     btsp_res %>%
@@ -1154,7 +1146,8 @@ total_comp <- normal_comp %>%
     "Bootstrap SE", "Primary Effect", "Effect Covariance", "Adjusted Fst"))) %>%
   select(type, pLI, LOEUF, s_het, RVIS, EDS)
 
-write_tsv(total_comp, "~/Downloads/table1.tsv")
+# write_tsv(total_comp %>% select(-type), "./tables/m1.tsv", col_names=FALSE)
+
 library(gt)
 
 total_comp |>
@@ -1200,7 +1193,7 @@ df_her_res <- df_her_cons %>%
   filter(term == "h2g") %>%
   mutate(p.value = p.value /2)
 
-# write_tsv(df_her_res, "./tables/s8.tsv")
+# write_tsv(df_her_res %>% select(-term), "./tables/s12.tsv")
 
 # qtl info
 rnaseq_qtl <- rnaseq_cov %>%
@@ -1265,7 +1258,7 @@ genoa_dist <- genoa_cov %>%
 all_dist <- bind_rows(rnaseq_dist, proteins_dist, genoa_dist)
 
 # enrich score
-rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_enrich_all.tsv.gz") %>%
+rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_enrich_all.tsv.gz") %>%
   filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait)%>%
   filter(method == "pip_cov") %>%
   filter(converged == 1 & reg == 0) %>%
@@ -1273,7 +1266,7 @@ rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_en
   mutate(study = "mesa.mrna") %>%
   select(study, trait, anno, est)
 
-proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_enrich_all.tsv.gz") %>%
+proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_enrich_all.tsv.gz") %>%
   filter(method == "pip_cov") %>%
   filter(trait %in% filter(proteins_cov, !is.na(snp))$trait)%>%
   filter(converged == 1 & reg == 0) %>%
@@ -1281,7 +1274,7 @@ proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/protein
   mutate(study = "mesa.proteins") %>%
   select(study, trait, anno, est)
 
-genoa_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_enrich_all.tsv.gz") %>%
+genoa_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_enrich_all.tsv.gz") %>%
   filter(trait %in% filter(genoa_cov, !is.na(snp))$trait)%>%
   filter(method == "pip_cov") %>%
   filter(converged == 1 & reg == 0) %>%
@@ -1347,9 +1340,9 @@ for (n_time in 1:100) {
     bind_rows(btsp_func2(df_all) %>%
         mutate(times = n_time))
 }
-# write_tsv(btsp_res2, "~/Downloads/btsp_res2.tsv")
+# write_tsv(btsp_res2, "~/Documents/github/data/sushie_results/real2/btsp_res2.tsv")
 
-btsp_res2 <- read_tsv("~/Documents/github/data/sushie_results/real/btsp_res2.tsv")
+btsp_res2 <- read_tsv("~/Documents/github/data/sushie_results/real2/btsp_res2.tsv")
 
 df_text <- df_all %>%
   nest_by(type, score) %>%
@@ -1403,7 +1396,7 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     legend.key.size = unit(0.4, 'cm'),
     axis.text=element_text(size = 5, face="bold")) 
 
-# ggsave("./plots/s20.png", width = p_width/1.75, height = p_height+1)
+# ggsave("./plots/s22.png", width = p_width/1.75, height = p_height+1)
 
 df_n_qtl <- df_all %>%
   filter(type == "PIP-weighted Distance (kb) to TSS") %>%
@@ -1440,7 +1433,7 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     legend.key.size = unit(0.4, 'cm'),
     axis.text=element_text(size = 5, face="bold")) 
 
-# ggsave("./plots/s21.png", width = p_width/1.75, height = p_height+1)
+# ggsave("./plots/s23.png", width = p_width/1.75, height = p_height+1)
 
 
 df_n_qtl <- df_all %>%
@@ -1480,5 +1473,5 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     legend.key.size = unit(0.4, 'cm'),
     axis.text=element_text(size = 5, face="bold")) 
 
-# ggsave("./plots/s22.png", width = p_width/1.75, height = p_height+2)
+# ggsave("./plots/s24.png", width = p_width/1.75, height = p_height+2)
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --time=6:00:00
 #SBATCH --mem=8Gb
-#SBATCH --array=1-60
+#SBATCH --array=1-300
 #SBATCH --mail-type=all
 #SBATCH --mail-user=zeyunlu@usc.edu
 
@@ -17,10 +17,10 @@ fi
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
-DATAF=/scratch1/zeyunlu/sushie_sim_genes
+DATAF=/project/nmancuso_8/data/sushie/analysis_results/sushie_sim_genes/
 
-start=`python -c "print( 1 + 25 *int(int($NR-1)))"`
-stop=$((start + 24))
+start=`python -c "print( 1 + 5 *int(int($NR-1)))"`
+stop=$((start + 4))
 
 for IDX in `seq $start $stop`
 do

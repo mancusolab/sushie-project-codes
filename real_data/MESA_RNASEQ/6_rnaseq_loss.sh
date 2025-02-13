@@ -20,14 +20,14 @@ source /home1/zeyunlu/init.sh
 conda activate jax2
 
 PLINK=/project/nmancuso_8/zeyunlu/tools/plink2
-SCRATCH=/scratch1/zeyunlu/sushie
+SCRATCH=/project/nmancuso_8/data/sushie/meta_data
 
 start=`python -c "print( 1 + 40 *int(int($NR-1)))"`
 stop=$((start + 39))
 
 bigTMP=/scratch1/zeyunlu/loss_rnaseq/tempf_${NR}
 
-mkdir ${bigTMP}
+mkdir -p ${bigTMP}
 
 for IDX in `seq $start $stop`
 do
@@ -43,7 +43,7 @@ do
 
   echo SUMMARY ${NR}, ${IDX}, ${ID}, ${CHR}, ${P0}, ${P1}
 
-  wfile=/scratch1/zeyunlu/sushie_rnaseq/weights/${ID}.normal.sushie.weights.tsv
+  wfile=/scratch1/zeyunlu/sushie_rnaseq/sushie/weights/${ID}.normal.sushie.weights.tsv
 
   if [ -f ${wfile} ]; then
     TMPDIR=${bigTMP}/${ID}
@@ -73,5 +73,7 @@ do
         --easfile $TMPDIR/${ID}.EAS.geno.bim \
         --gene $ID \
         --out $OUT
+
+    rm -rf $TMPDIR/*
   fi
 done

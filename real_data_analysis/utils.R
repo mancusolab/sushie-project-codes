@@ -50,7 +50,7 @@ theme_valid <- function() {
 }
 
 
-basic_sum <- function(..., subsets=NULL) {
+basic_sum <- function(..., total, subsets=NULL) {
   ans <- tibble()
   for (dd in list(...)) {
     
@@ -60,7 +60,7 @@ basic_sum <- function(..., subsets=NULL) {
     }
     
     # total number of genes
-    total <- length(unique(dd$trait))
+    # total <- length(unique(dd$trait))
     
     dd <- dd %>%
       filter(!is.na(snp))
@@ -80,7 +80,7 @@ basic_sum <- function(..., subsets=NULL) {
     # average pip
     tmp <- dd %>%
       group_by(trait, CSIndex) %>%
-      summarize(n1 = mean(pip_all)) %>%
+      summarize(n1 = mean(pip)) %>%
       ungroup() %>%
       summarize(n1 = mean(n1))
     
@@ -89,7 +89,7 @@ basic_sum <- function(..., subsets=NULL) {
     # average pip
     tmp <- dd %>%
       group_by(trait, CSIndex) %>%
-      summarize(n1 = sum(any(pip_all>0.9))) %>%
+      summarize(n1 = sum(any(pip>0.95))) %>%
       ungroup() %>%
       summarize(n1 = mean(n1))
     
@@ -118,8 +118,8 @@ basic_compare <- function(base, ..., subsets=NULL) {
     filter(!is.na(snp)) %>%
     group_by(trait, CSIndex) %>%
     summarize(cs_size = n(),
-      avg_pip = mean(pip_all),
-      g09 = sum(any(pip_all>0.9)))
+      avg_pip = mean(pip),
+      g09 = sum(any(pip>0.95)))
   
   ct <- 0
   for (dd in list(...)) {
@@ -132,22 +132,12 @@ basic_compare <- function(base, ..., subsets=NULL) {
         filter(trait %in% subsets)
     }
     
-    if ("meta_pip_all" %in% colnames(dd)){
-      new_dd <- dd %>%
-        filter(!is.na(snp)) %>%
-        group_by(trait, CSIndex) %>%
-        distinct(SNPIndex, meta_pip_all) %>%
-        summarize(cs_size = n(),
-          avg_pip = mean(meta_pip_all),
-          g09 = sum(any(meta_pip_all>0.9)))
-    } else {
-      new_dd <- dd %>%
-        filter(!is.na(snp)) %>%
-        group_by(trait, CSIndex) %>%
-        summarize(cs_size = n(),
-          avg_pip = mean(pip_all),
-          g09 = sum(any(pip_all>0.9)))
-    }
+    new_dd <- dd %>%
+      filter(!is.na(snp)) %>%
+      group_by(trait, CSIndex) %>%
+      summarize(cs_size = n(),
+        avg_pip = mean(pip),
+        g09 = sum(any(pip>0.95)))
     
     tmp_res <- new_base %>%
       inner_join(new_dd, by = c("trait", "CSIndex")) %>%
@@ -160,17 +150,17 @@ basic_compare <- function(base, ..., subsets=NULL) {
         g09.y = mean(g09.y))
     
     c1 <- tidy(t.test(tmp_res$cs_size.x,
-      tmp_res$cs_size.y, alternative = "less")) %>%
+      tmp_res$cs_size.y)) %>%
       mutate(n = nrow(tmp_res),
         metric = "cs_size")
     
     c2 <- tidy(t.test(tmp_res$avg_pip.x,
-      tmp_res$avg_pip.y, alternative = "greater")) %>%
+      tmp_res$avg_pip.y)) %>%
       mutate(n = nrow(tmp_res),
         metric = "avg_pip")
     
     c3 <- tidy(t.test(tmp_res$g09.x,
-      tmp_res$g09.y, alternative = "greater")) %>%
+      tmp_res$g09.y)) %>%
       mutate(n = nrow(tmp_res),
         metric = "g09")
     

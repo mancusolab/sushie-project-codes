@@ -4,6 +4,7 @@
 #SBATCH --array=1-625
 #SBATCH --mail-type=all
 #SBATCH --mail-user=zeyunlu@usc.edu
+#SBATCH --partition=conti
 
 if [ ! $SLURM_ARRAY_TASK_ID ]; then
   NR=$1
@@ -18,7 +19,7 @@ fi
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
-SCRATCH=/scratch1/zeyunlu/sushie
+SCRATCH=/project/nmancuso_8/data/sushie/meta_data
 
 start=`python -c "print( 1 + 35 *int(int($NR-1)))"`
 stop=$((start + 34))
@@ -36,7 +37,7 @@ do
 
   echo SUMMARY ${IDX}, ${RNASEQ_ID}, ${STRAND}, ${TSS}, ${TES}
 
-  FILE=/scratch1/zeyunlu/sushie_rnaseq/alphas/${RNASEQ_ID}.normal.sushie.alphas.tsv
+  FILE=/scratch1/zeyunlu/sushie_rnaseq/sushie/alphas/${RNASEQ_ID}.normal.sushie.alphas.tsv
   OUT=/scratch1/zeyunlu/sushie_rnaseq/tss/tss.rnaseq.${RNASEQ_ID}.tsv
 
   if [ -e $FILE ];

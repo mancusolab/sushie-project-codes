@@ -11,14 +11,12 @@ import numpy as np
 from glimix_core.lmm import LMM
 from jax import random
 
-
 config.update("jax_enable_x64", True)
 
 # annoying warnings if on Mac ARM M1
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import jax.numpy as jnp
-
 
 def _compute_ld(G):
     G = G.T
@@ -30,18 +28,55 @@ def _compute_ld(G):
     G /= jnp.std(G, axis=0)
 
     # regularize so that LD is PSD
-    LD = jnp.dot(G.T, G) / n + jnp.eye(p_int) * 0.1
+    original_LD = jnp.dot(G.T, G) / n
+    LD = original_LD + jnp.eye(p_int) * 0.1
 
     # compute cholesky decomp for faster sampling/simulation
     # L = linalg.cholesky(LD, lower=True)
     L = linalg.cholesky(LD, lower=True, check_finite=False)
     mu = 2 * mafs
     adj_mu = linalg.solve_triangular(L, mu, lower=True, check_finite=False)
+    # import pdb; pdb.set_trace()
+    #
+    # new_matrix = np.zeros_like(original_LD)
+    # np.fill_diagonal(new_matrix, 1)
+    # new_matrix[np.triu_indices_from(new_matrix, k=1)] = original_LD[np.triu_indices_from(original_LD, k=1)]
+    # new_matrix[np.tril_indices_from(new_matrix, k=-1)] = new_matrix.T[np.tril_indices_from(new_matrix, k=-1)]
+    return L, LD, adj_mu, original_LD
 
-    return L, LD, adj_mu
+ambiguous_snps = ["AT", "TA", "CG", "GC"]
 
+def _ambiguous_idx(baseA0, baseA1):
+    if len(baseA0) != len(baseA1):
+        raise ValueError("Base and compare alleles are not in the same dimension")
+
+    ambiguous_idx = jnp.where((baseA0 + baseA1).isin(ambiguous_snps))[0]
+
+    return ambiguous_idx
+
+def _maf_idx(bim, bed, maf = 0.01):
+
+    # calculate maf
+    snp_maf = jnp.mean(bed, axis=1) / 2
+    snp_maf = jnp.where(snp_maf > 0.5, 1 - snp_maf, snp_maf)
+
+    sel_idx = jnp.where(snp_maf < maf)[0]
+
+    if len(sel_idx) > 0:
+        mask = jnp.ones(bed.shape[0], dtype=bool)
+        mask = mask.at[sel_idx].set(False)
+        bed = bed[mask, :]
+        bim2 = bim.drop(sel_idx).reset_index(drop=True)
+        bim2["i"] = bim2.index
+        return bim2, bed
+    else:
+        return bim, bed
 
 def _allele_check(baseA0, baseA1, compareA0, compareA1):
+
+    if len(baseA0) != len(baseA1) or len(compareA0) != len(compareA1) or len(compareA0) != len(compareA1):
+        raise ValueError("Base and compare alleles are not in the same dimension")
+
     correct = jnp.array(
         ((baseA0 == compareA0) * 1) * ((baseA1 == compareA1) * 1), dtype=int
     )
@@ -55,7 +90,7 @@ def _allele_check(baseA0, baseA1, compareA0, compareA1):
     return correct_idx, flipped_idx, wrong_idx
 
 
-def _gen_ld(prefix_pop):
+def _gen_ld(prefix_pop, remove_ambiguous=True):
     # read in plink data
     n_pop = len(prefix_pop)
     bim = []
@@ -64,8 +99,12 @@ def _gen_ld(prefix_pop):
 
     for idx in range(n_pop):
         tmp_bim, tmp_fam, tmp_bed = read_plink(prefix_pop[idx], verbose=False)
-        tmp_bim = tmp_bim[["chrom", "snp", "a0", "a1", "i"]].rename(
+        tmp_bed = tmp_bed.compute()
+        tmp_bim, tmp_bed = _maf_idx(tmp_bim, tmp_bed)
+
+        tmp_bim = tmp_bim[["chrom", "snp", "pos", "a0", "a1", "i"]].rename(
             columns={"i": f"bimIDX_{idx}", "a0": f"a0_{idx}", "a1": f"a1_{idx}"})
+
         bim.append(tmp_bim)
         fam.append(tmp_fam)
         bed.append(tmp_bed)
@@ -75,32 +114,43 @@ def _gen_ld(prefix_pop):
     for idx in range(n_pop - 2):
         snps = pd.merge(snps, bim[idx + 2], how="inner", on=["chrom", "snp"])
 
+    snps = snps.reset_index(drop=True)
+    if remove_ambiguous:
+        # we just need to drop ambiguous index for the first ancestry
+        # and then it will automatically drop for others in later codes
+        ambig_idx = _ambiguous_idx(snps["a0_0"].values, snps["a1_0"].values)
+        snps = snps.drop(index=ambig_idx).reset_index(drop=True)
+
+    # remove wrong alleles
+    if n_pop > 1:
+        for idx in range(1, n_pop):
+            _, _, tmp_wrong_idx = _allele_check(snps["a0_0"].values, snps["a1_0"].values,
+                                                snps[f"a0_{idx}"].values, snps[f"a1_{idx}"].values)
+            snps = snps.drop(index=tmp_wrong_idx).reset_index(drop=True)
+
     flip_idx = []
     if n_pop > 1:
         for idx in range(1, n_pop):
-            # keep track of miss match alleles
-            correct_idx, tmp_flip_idx, tmp_wrong_idx = _allele_check(snps["a0_0"].values, snps["a1_0"].values,
-                                                                     snps[f"a0_{idx}"].values, snps[f"a1_{idx}"].values)
+            correct_idx, tmp_flip_idx, _ = _allele_check(snps["a0_0"].values, snps["a1_0"].values,
+                                                         snps[f"a0_{idx}"].values, snps[f"a1_{idx}"].values)
             flip_idx.append(tmp_flip_idx)
-            snps = snps.drop(index=tmp_wrong_idx)
             snps = snps.drop(columns=[f"a0_{idx}", f"a1_{idx}"])
         snps = snps.rename(columns={"a0_0": "a0", "a1_0": "a1"})
 
-    output_dic = {"LD": [], "L": [], "mu": []}
+    output_dic = {"LD": [], "L": [], "mu": [], "trueLD": []}
     for idx in range(n_pop):
-        bed[idx] = bed[idx][snps[f"bimIDX_{idx}"].values, :].compute()
-
+        bed[idx] = bed[idx][snps[f"bimIDX_{idx}"].values, :]
         # flip the mismatched allele
-        if idx > 0:
-            bed[idx][flip_idx[idx - 1]] = 2 - bed[idx][flip_idx[idx - 1]]
+        if idx > 0 and len(flip_idx[idx - 1]) != 0:
+            bed[idx][flip_idx[idx - 1]] = 2 - bed[idx][flip_idx[idx - 1], :]
 
-        L, LD, mu = _compute_ld(bed[idx])
+        L, LD, mu, trueLD = _compute_ld(bed[idx])
         output_dic["L"].append(L)
         output_dic["LD"].append(LD)
         output_dic["mu"].append(mu)
+        output_dic["trueLD"].append(trueLD)
 
-    return output_dic
-
+    return output_dic, snps
 
 def simulation_sushie(rng_key, output_dic, N, L, L3, h2g, rho):
     mu = output_dic["mu"]
@@ -136,7 +186,10 @@ def simulation_sushie(rng_key, output_dic, N, L, L3, h2g, rho):
         ct = ct + 1
         rng_key, b_key = random.split(rng_key, 2)
 
-        bvec = random.multivariate_normal(b_key, jnp.zeros((n_pop,)), b_covar, shape=(L,))
+        if jnp.sum(b_covar) != 0:
+            bvec = random.multivariate_normal(b_key, jnp.zeros((n_pop,)), b_covar, shape=(L,))
+        else:
+            bvec = jnp.zeros((L, n_pop))
 
         b_indep = jnp.zeros((n_pop, L3))
         for idx in range(n_pop):
@@ -161,11 +214,19 @@ def simulation_sushie(rng_key, output_dic, N, L, L3, h2g, rho):
         for idx in range(n_pop):
             tmp_g = X[idx] @ bvec_all[idx]
             tmp_s2g = jnp.var(tmp_g)
-            tmp_s2e = ((1 / h2g[idx]) - 1) * tmp_s2g
+
+            if h2g[idx] != 0:
+                tmp_s2e = ((1 / h2g[idx]) - 1) * tmp_s2g
+            else:
+                tmp_s2e = 1
+
             rng_key, y_key = random.split(rng_key, 2)
             tmp_y = tmp_g + jnp.sqrt(tmp_s2e) * random.normal(y_key, shape=(N[idx],))
+
             _, _, _, tmp_lrt, _ = estimate_her(X[idx], tmp_y)
 
+            tmp_y -= jnp.mean(tmp_y)
+            tmp_y /= jnp.std(tmp_y)
             g.append(tmp_g)
             s2e.append(tmp_s2e)
             y.append(tmp_y)
@@ -173,14 +234,17 @@ def simulation_sushie(rng_key, output_dic, N, L, L3, h2g, rho):
 
         # 2.7055
         keep_greater = True
-        for idx in range(n_pop):
-            keep_greater = False if lrt[idx] < 2.7055 else keep_greater
+        # for idx in range(n_pop):
+        #     keep_greater = False if lrt[idx] < 2.7055 else keep_greater
 
         if keep_greater:
             break
 
     return rng_key, X, y, bvec, bvec_all, s2e, gamma, b_covar
 
+def make_pip(alpha):
+    pip = -jnp.expm1(jnp.sum(jnp.log1p(-alpha), axis=0))
+    return pip
 
 def ols(X: jnp.ndarray, y: jnp.ndarray):
     n_samples, n_features = X.shape
@@ -362,11 +426,10 @@ def compute_twas(gwas, coef, LD):
     score = np.einsum("ji,i->j", coef.T, Z)
     within_var = np.einsum("jk,ki,ij->j", coef.T, LD, coef)
 
-    z_twas = np.zeros(len(score))
-    p_twas = np.ones(len(score))
+    z_twas = np.full(len(score), np.nan)
+    # p_twas = np.ones(len(score))
     for idx in range(len(score)):
         if within_var[idx] > 0:
             z_twas[idx] = score[idx] / np.sqrt(within_var[idx])
-            p_twas[idx] = 2 * stats.norm.sf(np.abs(z_twas[idx]))
 
-    return z_twas, p_twas
+    return z_twas

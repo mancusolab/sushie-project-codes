@@ -7,15 +7,35 @@ from sklearn.decomposition import PCA
 import copy
 
 path = "/project/nmancuso_8/data/MESA/dbgap/WGS/proteome/"
-scretch_path = "/scratch1/zeyunlu/sushie"
+scretch_path = "/project/nmancuso_8/data/sushie/meta_data"
+
+df_pt1 = pd.read_csv(
+    "/project/nmancuso_8/data/MESA/dbgap/WGS/phs001416.v3.pht010511.v1.p1.c1.TOPMed_MESA_Proteomics_Sample_Attributes.HMB.txt.gz",
+    sep="\t", skiprows=10).rename(columns={"SAMPLE_ID": "pro_id",
+                                           "SUBJECT_ID": "dbgap_id",
+                                           "AGE_AT_COLLECTION": "age",
+                                            "COLLECTION_VISIT": "visit"})
+df_pt1 = df_pt1[["pro_id", "dbgap_id", "age", "visit"]]
+
+df_pt2 = pd.read_csv(
+    "/project/nmancuso_8/data/MESA/dbgap/WGS/phs001416.v3.pht010511.v1.p1.c2.TOPMed_MESA_Proteomics_Sample_Attributes.HMB-NPU.txt.gz",
+    sep="\t", skiprows=10).rename(columns={"SAMPLE_ID": "pro_id",
+                                           "SUBJECT_ID": "dbgap_id",
+                                           "AGE_AT_COLLECTION": "age",
+                                           "COLLECTION_VISIT": "visit"
+                                           })
+
+df_pt2 = df_pt2[["pro_id", "dbgap_id", "age", "visit"]]
+df_pt = pd.concat([df_pt1, df_pt2])
+v1_pt = df_pt[df_pt.visit == 1]
 
 df_c1 = pd.read_csv(f"{path}/c1/MESA_ProteomicsDataMergedRunlistKey_DS_HMB_20220426.txt", sep="\t")
 df_c2 = pd.read_csv(f"{path}/c2/MESA_ProteomicsDataMergedRunlistKey_DS_HMB-NPU_20220426.txt", sep="\t")
-df_pro = np.log(pd.concat([df_c1, df_c2]).set_index("TOP_ID").transpose())
+df_pro = np.log(pd.concat([df_c1, df_c2]).set_index("TOP_ID").transpose())[v1_pt.pro_id.values]
 df_pro_std = qtl.norm.inverse_normal_transform(df_pro).transpose()
 # 1317 proteins 1966 pt
 
-# run pcs
+# run pcs on visit 1 measurements
 # scale first
 df_pro_std -= np.mean(df_pro_std, axis=0)
 df_pro_std /= np.std(df_pro_std, axis=0)
@@ -27,7 +47,7 @@ raw_pcs -= np.mean(raw_pcs, axis=0)
 raw_pcs /= np.std(raw_pcs, axis=0)
 proteins_pcs = pd.DataFrame(raw_pcs, index=df_pro_std.index, columns=[f"proteins_pc{i}" for i in range(1, 31)])
 proteins_pcs = proteins_pcs.reset_index(names="pro_id")
-proteins_pcs.to_csv("/project/nmancuso_8/data/MESA/processed/covariates/protein_pcs/mesa_proteins_all_pcs.tsv.gz",
+proteins_pcs.to_csv("/project/nmancuso_8/data/MESA/processed/covariates/protein_pcs/mesa_proteins_all_pcs_v1.tsv.gz",
                   sep="\t", index=False)
 
 df_pro = pd.concat([df_c1, df_c2])

@@ -6,7 +6,7 @@ import qtl.norm
 from sklearn.decomposition import PCA
 
 path = "/project/nmancuso_8/data/MESA/dbgap/WGS/rna_seq_v2"
-scretch_path = "/scratch1/zeyunlu/sushie"
+scretch_path = "/project/nmancuso_8/data/sushie/meta_data"
 
 # calculate PCs
 pt1 = pd.read_csv(
@@ -31,24 +31,26 @@ df_pt = pd.concat([pt1, pt2])
 df_seq = pd.read_csv(f"{path}/topmed_mesa_rnaseqqcv2.0.0.gene_reads.tsv.gz", sep="\t")
 df_seq = df_seq.drop(columns=["Description"]).set_index("Name")
 
-for ctype in ["PBMC", "T-Cell", "Mono"]:
-    tmp_pt = df_pt[df_pt.type == ctype]
-    tmp_seq = df_seq[tmp_pt.expr_id].transpose()
-    tmp_seq = tmp_seq.loc[:, ~(np.sum(tmp_seq, axis=0) == 0)]
-    tmm_counts = qtl.norm.edger_cpm(tmp_seq.transpose(), normalized_lib_sizes=True)
-    df_norm = qtl.norm.inverse_normal_transform(tmm_counts)
-    df_norm = df_norm.transpose()
-    df_norm -= np.mean(df_norm, axis=0)
-    df_norm /= np.std(df_norm, axis=0)
-    n_comp = 30
-    pca = PCA(n_components=n_comp)
-    raw_pcs = pca.fit_transform(df_norm)
-    raw_pcs -= np.mean(raw_pcs, axis=0)
-    raw_pcs /= np.std(raw_pcs, axis=0)
-    expr_pcs = pd.concat([pd.DataFrame(tmp_seq.index), pd.DataFrame(raw_pcs)], axis=1, ignore_index=True)
-    expr_pcs.columns = ["expr_id"] + [f"expr_pc{i}" for i in range(1, 31)]
-    expr_pcs.to_csv(f"/project/nmancuso_8/data/MESA/processed/covariates/rnaseq_pcs/rnaseq_pcs_{ctype}.tsv.gz", sep="\t", index=False)
-
+for num_visit in [1, 5]:
+    for ctype in ["PBMC", "T-Cell", "Mono"]:
+        tmp_pt = df_pt[df_pt.visit == num_visit]
+        tmp_pt = tmp_pt[tmp_pt.type == ctype]
+        if tmp_pt.shape[0] != 0:
+            tmp_seq = df_seq[tmp_pt.expr_id].transpose()
+            tmp_seq = tmp_seq.loc[:, ~(np.sum(tmp_seq, axis=0) == 0)]
+            tmm_counts = qtl.norm.edger_cpm(tmp_seq.transpose(), normalized_lib_sizes=True)
+            df_norm = qtl.norm.inverse_normal_transform(tmm_counts)
+            df_norm = df_norm.transpose()
+            df_norm -= np.mean(df_norm, axis=0)
+            df_norm /= np.std(df_norm, axis=0)
+            n_comp = 30
+            pca = PCA(n_components=n_comp)
+            raw_pcs = pca.fit_transform(df_norm)
+            raw_pcs -= np.mean(raw_pcs, axis=0)
+            raw_pcs /= np.std(raw_pcs, axis=0)
+            expr_pcs = pd.concat([pd.DataFrame(tmp_seq.index), pd.DataFrame(raw_pcs)], axis=1, ignore_index=True)
+            expr_pcs.columns = ["expr_id"] + [f"expr_pc{i}" for i in range(1, 31)]
+            expr_pcs.to_csv(f"/project/nmancuso_8/data/MESA/processed/covariates/rnaseq_pcs/rnaseq_pcs_visit{num_visit}_{ctype}.tsv.gz", sep="\t", index=False)
 
 # only focus on PBMC data and visit 1
 df_pt = df_pt[df_pt.visit == 1]
@@ -62,7 +64,7 @@ df_norm = df_norm.loc[:, ~(np.sum(df_norm, axis=0) == 0)].transpose()
 df_rpkm = pd.read_csv(f"{path}/topmed_mesa_rnaseqqcv2.0.0.gene_rpkm.tsv.gz", sep="\t")
 df_rpkm = df_rpkm.drop(columns=["Description"]).set_index("Name")
 df_rpkm = df_rpkm[df_norm.columns]
-df_rpkm = df_rpkm.loc[df_rpkm.index.isin(df_norm.index),:]
+df_rpkm = df_rpkm.loc[df_rpkm.index.isin(df_norm.index), :]
 
 sample_frac_threshold = 0.2
 count_threshold = 6
@@ -139,7 +141,7 @@ geno_pcs = geno_pcs.iloc[:, 0:11]
 geno_pcs.columns = ["geno_id"] + [f"geno_pc{i}" for i in range(1, 11)]
 
 # read in expr pcs
-expr_pcs = pd.read_csv("/project/nmancuso_8/data/MESA/processed/covariates/rnaseq_pcs/rnaseq_pcs_PBMC.tsv.gz", sep="\t")
+expr_pcs = pd.read_csv("/project/nmancuso_8/data/MESA/processed/covariates/rnaseq_pcs/rnaseq_pcs_visit1_PBMC.tsv.gz", sep="\t")
 expr_pcs = expr_pcs.iloc[:, 0:16]
 expr_pcs.columns = ["expr_id"] + [f"expr_pc{i}" for i in range(1, 16)]
 
@@ -149,7 +151,7 @@ df_all = df_covar.merge(geno_pcs, how="left", on="geno_id").merge(expr_pcs, how=
 for ans in ["EUR", "AFR", "HIS", "EAS"]:
     tmp_covar = df_all[df_all.race == ans]
     out_covar = tmp_covar[["geno_id", "sex", "age", "assay_lab"] + [f"geno_pc{i}" for i in range(1, 11)] + [f"expr_pc{i}" for i in range(1, 16)]]
-    out_covar.to_csv(f"/project/nmancuso_8/data/MESA/processed/covariates/rnaseq/mesa_rnaseq_covar_v1_{ans}.tsv.gz", sep="\t", index=False)
+    out_covar.to_csv(f"/project/nmancuso_8/data/MESA/processed/covariates/rnaseq/mesa_rnaseq_covar_v1_PBMC_{ans}.tsv.gz", sep="\t", index=False)
     # save one copy ot scretch (to avoid bugs when running hpc that may happen from using data in the project folder)
     out_covar.to_csv(f"{scretch_path}/mesa_rnaseq_covar_{ans}.tsv.gz", sep="\t", index=False, header=False)
     # output geno id for subsetting the genotype data in the analysis
@@ -161,7 +163,7 @@ for ans in ["EUR", "AFR", "HIS", "EAS"]:
     # this function expect the input matrix where rows are proteins and columns are participants
     tmm_counts = qtl.norm.edger_cpm(tmp_pt.transpose(), normalized_lib_sizes=True)
     tmp_pt_std = qtl.norm.inverse_normal_transform(tmm_counts).transpose().reset_index()
-    tmp_pt_std.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_v1_{ans}.tsv.gz", sep="\t", index=False)
+    tmp_pt_std.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_v1_PBMC_{ans}.tsv.gz", sep="\t", index=False)
     tmp_pt_std.to_csv(f"{scretch_path}/mesa_rnaseq_v1_{ans}.tsv.gz", sep="\t", index=False)
 
 # all
@@ -172,16 +174,16 @@ tmp_pt = tmp_pt.drop(columns=["expr_id"]).set_index("geno_id")
 # this function expect the input matrix where rows are proteins and columns are participants
 tmm_counts = qtl.norm.edger_cpm(tmp_pt.transpose(), normalized_lib_sizes=True)
 tmp_pt_std = qtl.norm.inverse_normal_transform(tmm_counts).transpose().reset_index()
-tmp_pt_std.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_v1_all.tsv.gz", sep="\t", index=False)
+tmp_pt_std.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_v1_PBMC_all.tsv.gz", sep="\t", index=False)
 tmp_pt_std.to_csv(f"{scretch_path}/mesa_rnaseq_v1_all.tsv.gz", sep="\t", index=False)
 
 gene_list = df_ref[df_ref.ID2.isin(df_norm.Name)].copy()
 gene_list["CODE"] = df_ref.ID2 + "_" + df_ref.NAME
 gene_list = gene_list.sort_values(["ID2"])
 
-gene_list.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_gene_list.tsv", index=False, sep="\t")
+gene_list.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_v1_PBMC_gene_list.tsv", index=False, sep="\t")
 gene_list.to_csv(f"{scretch_path}/mesa_rnaseq_gene_list.tsv", index=False, header=None, sep="\t")
 
 gene_list_noMHC = gene_list[gene_list.MHC == 0]
-gene_list_noMHC.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_gene_list_noMHC.tsv", index=False, sep="\t")
+gene_list_noMHC.to_csv(f"/project/nmancuso_8/data/MESA/processed/expression/mesa_rnaseq_v1_PBMC_gene_list_noMHC.tsv", index=False, sep="\t")
 gene_list_noMHC.to_csv(f"{scretch_path}/mesa_rnaseq_gene_list_noMHC.tsv", index=False, header=None, sep="\t")

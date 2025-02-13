@@ -24,19 +24,19 @@ def cosine_similarity(arr1, arr2):
     cosine_sim = dot_product / (norm_arr1 * norm_arr2)
     return cosine_sim
 
-def weighted_jaccard_numpy(A, B):
-    min_sum = np.sum(np.minimum(A, B))
-    max_sum = np.sum(np.maximum(A, B))
-    return min_sum / max_sum if max_sum != 0 else 0
-
-def jaccard_index(set1, set2):
-    set1 = set(set1)
-    set2 = set(set2)
-    intersection = set1.intersection(set2)
-    union = set1.union(set2)
-    if len(union) == 0:
-        return 0  # Avoid division by zero when both sets are empty
-    return len(intersection) / len(union)
+# def weighted_jaccard_numpy(A, B):
+#     min_sum = np.sum(np.minimum(A, B))
+#     max_sum = np.sum(np.maximum(A, B))
+#     return min_sum / max_sum if max_sum != 0 else 0
+#
+# def jaccard_index(set1, set2):
+#     set1 = set(set1)
+#     set2 = set(set2)
+#     intersection = set1.intersection(set2)
+#     union = set1.union(set2)
+#     if len(union) == 0:
+#         return 0  # Avoid division by zero when both sets are empty
+#     return len(intersection) / len(union)
 
 
 def meta_ancestry(df_wk, n_ans, n_range):
@@ -107,37 +107,37 @@ for idx in range(1, 11):
                 main_snps = df_s1[df_s1[f"in_cs_l{idx}"] == 1].snp.unique()
                 valid_snps = df_s2[df_s2[f"in_cs_l{jdx}"] == 1].snp.unique()
 
-                df_outer = df_s1.merge(df_s2, how="outer", on="snp")
+                df_inner = df_s1.merge(df_s2, how="inner", on="snp")
 
-                df_comp = df_s1.merge(df_s2, how="inner", on="snp").fillna(0)
+                df_comp = df_s1.merge(df_s2, how="outer", on="snp").fillna(0)
                 df_comp.columns = ["snp", "main_alpha", "main_cs", "valid_alpha", "valid_cs"]
 
-                w_jac = weighted_jaccard_numpy(df_comp.main_alpha.values, df_comp.valid_alpha.values)
-                n_jac = jaccard_index(main_snps, valid_snps)
+                # w_jac = weighted_jaccard_numpy(df_comp.main_alpha.values, df_comp.valid_alpha.values)
+                # n_jac = jaccard_index(main_snps, valid_snps)
                 cos = cosine_similarity(df_comp.main_alpha.values, df_comp.valid_alpha.values)
 
-                null_w_jac = []
-                null_n_jac = []
+                # null_w_jac = []
+                # null_n_jac = []
                 null_cos = []
                 for ldx in range(args.rep):
                     test_pip = copy.deepcopy(df_comp.valid_alpha.values)
                     np.random.shuffle(test_pip)
-                    tmp_w_jac = weighted_jaccard_numpy(df_comp.main_alpha.values, test_pip)
+                    # tmp_w_jac = weighted_jaccard_numpy(df_comp.main_alpha.values, test_pip)
                     tmp_cos = cosine_similarity(df_comp.main_alpha.values, test_pip)
-                    tmp_n_jac = jaccard_index(main_snps, np.random.choice(df_w2.snp.values, size=len(valid_snps), replace=False))
-                    null_w_jac.append(tmp_w_jac)
+                    # tmp_n_jac = jaccard_index(main_snps, np.random.choice(df_w2.snp.values, size=len(valid_snps), replace=False))
+                    # null_w_jac.append(tmp_w_jac)
                     null_cos.append(tmp_cos)
-                    null_n_jac.append(tmp_n_jac)
+                    # null_n_jac.append(tmp_n_jac)
 
-                m_w_jac = np.mean(null_w_jac)
-                sd_w_jac = np.std(null_w_jac)
-                z_w_jac = (w_jac - m_w_jac) / sd_w_jac
-                p_w_jac = calc_p(z_w_jac)
-
-                m_n_jac = np.mean(null_n_jac)
-                sd_n_jac = np.std(null_n_jac)
-                z_n_jac = (n_jac - m_n_jac) / sd_n_jac
-                p_n_jac = calc_p(z_n_jac)
+                # m_w_jac = np.mean(null_w_jac)
+                # sd_w_jac = np.std(null_w_jac)
+                # z_w_jac = (w_jac - m_w_jac) / sd_w_jac
+                # p_w_jac = calc_p(z_w_jac)
+                #
+                # m_n_jac = np.mean(null_n_jac)
+                # sd_n_jac = np.std(null_n_jac)
+                # z_n_jac = (n_jac - m_n_jac) / sd_n_jac
+                # p_n_jac = calc_p(z_n_jac)
 
                 m_cos = np.mean(null_cos)
                 sd_cos = np.std(null_cos)
@@ -151,20 +151,20 @@ for idx in range(1, 11):
                                     "match": [cs_keep * 1],
                                     "n_main": [df_w1.shape[0]],
                                     "n_valid": [df_w2.shape[0]],
-                                    "n_overlap": [df_comp.shape[0]],
-                                    "n_union": [df_outer.shape[0]],
+                                    "n_overlap": [df_inner.shape[0]],
+                                    "n_union": [df_comp.shape[0]],
                                     "n_cs_main": [len(main_snps)],
                                     "n_cs_valid": [len(valid_snps)],
-                                    "w_jac": [w_jac],
-                                    "mean_w_jac": [m_w_jac],
-                                    "se_w_jac": [sd_w_jac],
-                                    "z_w_jac": [z_w_jac],
-                                    "p_w_jac": [p_w_jac],
-                                    "n_jac": [n_jac],
-                                    "mean_n_jac": [m_n_jac],
-                                    "se_n_jac": [sd_n_jac],
-                                    "z_n_jac": [z_n_jac],
-                                    "p_n_jac": [p_n_jac],
+                                    # "w_jac": [w_jac],
+                                    # "mean_w_jac": [m_w_jac],
+                                    # "se_w_jac": [sd_w_jac],
+                                    # "z_w_jac": [z_w_jac],
+                                    # "p_w_jac": [p_w_jac],
+                                    # "n_jac": [n_jac],
+                                    # "mean_n_jac": [m_n_jac],
+                                    # "se_n_jac": [sd_n_jac],
+                                    # "z_n_jac": [z_n_jac],
+                                    # "p_n_jac": [p_n_jac],
                                     "cos": [cos],
                                     "mean_cos": [m_cos],
                                     "se_cos": [sd_cos],

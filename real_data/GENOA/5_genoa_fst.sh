@@ -20,7 +20,7 @@ source /home1/zeyunlu/init.sh
 conda activate bcf
 
 PLINK=/project/nmancuso_8/zeyunlu/tools/plink2
-SCRATCH=/scratch1/zeyunlu/sushie
+SCRATCH=/project/nmancuso_8/data/sushie/meta_data
 
 ea_pt=/project/nmancuso_8/data/GENOA/sushie/ea_373_pt.id
 aa_pt=/project/nmancuso_8/data/GENOA/sushie/aa_441_pt.id
@@ -30,7 +30,7 @@ stop=$((start + 39))
 
 bigTMP=/scratch1/zeyunlu/fst_genoa/tempf_${NR}
 
-mkdir ${bigTMP}
+mkdir -p ${bigTMP}
 
 for IDX in `seq $start $stop`
 do
@@ -48,8 +48,8 @@ do
 
   TMPDIR=${bigTMP}/${ID}
 
-  wfile=/scratch1/zeyunlu/sushie_genoa/weights/${ID}.normal.sushie.weights.tsv
-  csfile=/scratch1/zeyunlu/sushie_genoa/cs/${ID}.normal.sushie.cs.tsv
+  wfile=/scratch1/zeyunlu/sushie_genoa/sushie/weights/${ID}.normal.sushie.weights.tsv
+  # csfile=/scratch1/zeyunlu/sushie_genoa/sushie/cs/${ID}.normal.sushie.cs.tsv
 
   if [ -f ${wfile} ]; then
     mkdir -p $TMPDIR
@@ -59,7 +59,7 @@ do
     aa_bfile=/project/nmancuso_8/data/GENOA/processed/genotype/plink/annotated_dbsnp155/aa_chr${CHR}
 
     awk 'NR > 1 {print $3}' $wfile > $TMPDIR/${ID}.snp
-    awk 'NR > 1 {print $3}' $csfile > $TMPDIR/${ID}.cs.snp
+    # awk 'NR > 1 {print $3}' $csfile > $TMPDIR/${ID}.cs.snp
 
     ${PLINK} --bfile $ea_bfile --extract $TMPDIR/${ID}.snp --keep $ea_pt \
       --export vcf --out ${TMPDIR}/${ID}_vcf_geno_ea
@@ -87,14 +87,15 @@ do
       ${TMPDIR}/${ID}_all_snp.fst.summary \
       > /scratch1/zeyunlu/sushie_genoa/fst/${ID}_all_snp.fst.summary
 
-    if grep -q '^$' $TMPDIR/${ID}.cs.snp; then
-      echo "The empty file."
-    else
-      ${PLINK} --vcf ${TMPDIR}/${ID}_vcf_geno_all.vcf.gz --extract $TMPDIR/${ID}.cs.snp \
-        --fst CATPHENO --within $TMPDIR/all.pt --out ${TMPDIR}/${ID}_cs_snp
-      awk -v id="$ID" 'BEGIN{OFS=FS="\t"} NR==1{print $0, "trait"} NR>1{print $0, id}' \
-        ${TMPDIR}/${ID}_cs_snp.fst.summary \
-        > /scratch1/zeyunlu/sushie_genoa/fst/${ID}_cs_snp.fst.summary
-    fi
+    rm -rf $TMPDIR/*
+#    if grep -q '^$' $TMPDIR/${ID}.cs.snp; then
+#      echo "The empty file."
+#    else
+#      ${PLINK} --vcf ${TMPDIR}/${ID}_vcf_geno_all.vcf.gz --extract $TMPDIR/${ID}.cs.snp \
+#        --fst CATPHENO --within $TMPDIR/all.pt --out ${TMPDIR}/${ID}_cs_snp
+#      awk -v id="$ID" 'BEGIN{OFS=FS="\t"} NR==1{print $0, "trait"} NR>1{print $0, id}' \
+#        ${TMPDIR}/${ID}_cs_snp.fst.summary \
+#        > /scratch1/zeyunlu/sushie_genoa/fst/${ID}_cs_snp.fst.summary
+#    fi
   fi
 done

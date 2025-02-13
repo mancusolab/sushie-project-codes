@@ -5,7 +5,7 @@ import numpy as np
 import qtl.norm
 
 path = "/project/nmancuso_8/data/MESA/dbgap/WGS/rna_seq_v2"
-scretch_path = "/scratch1/zeyunlu/sushie"
+scretch_path = "/project/nmancuso_8/data/sushie/meta_data"
 
 pt1 = pd.read_csv(
     "/project/nmancuso_8/data/MESA/dbgap/WGS/phs001416.v3.pht010512.v1.p1.c2.TOPMed_MESA_RNA_Seq_Expression_Sample_Attributes.HMB-NPU.txt.gz",
@@ -118,7 +118,7 @@ geno_pcs = geno_pcs.iloc[:, 0:11]
 geno_pcs.columns = ["geno_id"] + [f"geno_pc{i}" for i in range(1, 11)]
 
 # read in expr pcs
-expr_pcs = pd.read_csv("/project/nmancuso_8/data/MESA/processed/covariates/rnaseq_pcs/rnaseq_pcs_PBMC.tsv.gz", sep="\t")
+expr_pcs = pd.read_csv("/project/nmancuso_8/data/MESA/processed/covariates/rnaseq_pcs/rnaseq_pcs_visit5_PBMC.tsv.gz", sep="\t")
 expr_pcs = expr_pcs.iloc[:, 0:16]
 expr_pcs.columns = ["expr_id"] + [f"expr_pc{i}" for i in range(1, 16)]
 

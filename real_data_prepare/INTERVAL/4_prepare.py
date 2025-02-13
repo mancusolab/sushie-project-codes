@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 path = "/project/nmancuso_8/data/INTERVAL"
-scretch_path = "/scratch1/zeyunlu/sushie"
+scratch_path = "/project/nmancuso_8/data/sushie/meta_data"
 
 df_raw = pd.read_csv(f"{path}/phenotype/INTERVAL.proteins.plink1.tsv", sep="\t")
 df_raw2 = df_raw.drop(columns=["FID"]).set_index("IID")
@@ -32,12 +32,12 @@ df_covar = pd.get_dummies(df_covar.drop(columns="FID"), columns=["gender", "dura
 df_covar.columns = ["IID", "age"] + [f"geno_pcs{idx}" for idx in range(1, 4)] + ["gender", "duration_blood_processing", "subchort"]
 df_covar = df_covar.merge(protein_pcs.iloc[:, 0:6], how="left", on="IID")
 df_covar.to_csv(f"{path}/covariates/interval_covar.tsv.gz", sep="\t", index=False)
-df_covar.to_csv(f"{scretch_path}/interval_covar.tsv", sep="\t", header=None, index=False)
+df_covar.to_csv(f"{scratch_path}/interval_covar.tsv", sep="\t", header=None, index=False)
 df_pt = df_covar[["IID"]]
 df_pt["FID"] = 0
 df_pt = df_pt[["FID", "IID"]]
-df_pt.to_csv(f"{scretch_path}/interval_pt_geno.tsv", sep="\t", header=None, index=False)
-df_pt[["IID"]].to_csv(f"{scretch_path}/interval_pt_pheno.tsv", sep="\t", header=None, index=False)
+df_pt.to_csv(f"{scratch_path}/interval_pt_geno.tsv", sep="\t", header=None, index=False)
+df_pt[["IID"]].to_csv(f"{scratch_path}/interval_pt_pheno.tsv", sep="\t", header=None, index=False)
 
 # prepare ref file
 df_ref = pd.read_csv("/project/nmancuso_8/data/GENCODE/gencode.v26lift37.GRCh37.genes.only.tsv", sep="\t")
@@ -92,13 +92,13 @@ df_final = df_final.sort_values(["CODE"])
 df_final["INTERVAL_SYMBOL"] = df_final["INTERVAL_SYMBOL"].str.replace(" ", "_")
 
 df_final.to_csv(f"{path}/interval_gene_list.tsv", index=False, sep="\t")
-df_final.to_csv(f"{scretch_path}/interval_gene_list.tsv", index=False, header=None, sep="\t")
+df_final.to_csv(f"{scratch_path}/interval_gene_list.tsv", index=False, header=None, sep="\t")
 
 df_final_noMHC = df_final[df_final.MHC == 0]
 df_final_noMHC.to_csv(f"{path}/interval_gene_list_noMHC.tsv", index=False, sep="\t")
-df_final_noMHC.to_csv(f"{scretch_path}/interval_gene_list_noMHC.tsv", index=False, header=None, sep="\t")
+df_final_noMHC.to_csv(f"{scratch_path}/interval_gene_list_noMHC.tsv", index=False, header=None, sep="\t")
 
 df_raw2 = df_raw2.iloc[:, df_raw2.columns.isin(df_final.SOMAMER_ID)].reset_index(names="geno_id")
 df_raw2.to_csv(f"{path}/interval_protein_levels.tsv.gz", sep="\t", index=False)
-df_raw2.to_csv(f"{scretch_path}/interval_protein_levels.tsv", sep="\t", index=False)
+df_raw2.to_csv(f"{scratch_path}/interval_protein_levels.tsv", sep="\t", index=False)
 

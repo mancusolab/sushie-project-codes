@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 path = "/project/nmancuso_8/data/GEUVADIS/ProcessedData"
-scretch_path = "/scratch1/zeyunlu/sushie"
+scretch_path = "/project/nmancuso_8/data/sushie/meta_data"
 
 df_raw = pd.read_csv(f"{path}/GD462.GeneQuantRPKM.50FN.samplename.resk10.txt.gz", sep="\t")
 df_raw2 = df_raw.drop(columns=["Gene_Symbol", "Coord", "Chr"]).set_index("TargetID")

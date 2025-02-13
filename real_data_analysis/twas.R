@@ -3,254 +3,37 @@ library(ggpubr)
 library(broom)
 source("./utils.R")
 
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.sushie_cs.tsv.gz")
+rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz")
 
-proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.sushie_cs.tsv.gz")
+proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.sushie_cs.tsv.gz")
+genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
 
-twas_colors <- c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
-  "Meta-SuSiE" = "#a6cee3", "SuSiE" = "#e7298a",
-  "LASSO" = "#66a61e", "Elastic Net" = "#e6ab02", "gBLUP" = "#a6761d")
+method_colors <-c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
+  "Meta-SuSiE" = "#7570b3", "SuSiE" = "#e7298a",
+  "SuSiEx" = "#66a61e", "MESuSiE" = "#e6ab02", "XMAP" = "#a6761d", "XMAP-IND" = "#666666")
 
-rnaseq_r2 <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_r2.tsv.gz") %>%
-  mutate(study = "mesa.mrna") %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait)
+twas_colors <- c(method_colors,
+  "LASSO" = "#fb8072", "Elastic Net" = "#b3de69", "gBLUP" = "#fccde5")
 
-proteins_r2 <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_r2.tsv.gz") %>%
-  mutate(study = "mesa.proteins") %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait)
+# lfs <- list.files("~/Downloads/new_res/", full.names = TRUE)
+# 
+# df_twas <- lfs %>% map_df(read_tsv, col_type = cols())
+# write_tsv(df_twas, "~/Documents/github/data/sushie_results/real2/sushie_twas.tsv.gz")
 
-genoa_r2 <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_r2.tsv.gz") %>%
-  mutate(study = "genoa.mrna") %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait)
-
-rnaseq_corr <-
-  read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_corr.tsv.gz")
-
-proteins_corr <-
-  read_tsv("~/Documents/github/data/sushie_results/real/proteins_corr.tsv.gz")
-
-genoa_corr <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_corr.tsv.gz")
-
-
-df_r2 <- bind_rows(rnaseq_r2,
-  proteins_r2,
-  genoa_r2) %>%
-  filter(type == "r2") %>%
-  select(-cross) %>%
-  pivot_longer(cols = 1:7) %>%
-  group_by(name) %>%
-  mutate(value = ifelse(is.na(value), 0, value)) %>%
-  mutate(name = factor(name,
-    levels = c("sushie", "indep", "meta", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuShiE-Indep",  "Meta-SuSiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")),
-    study = factor(study,
-      levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
-      labels = c("TOPMed-MESA mRNA",
-        "TOPMed-MESA Proteins",
-        "GENOA mRNA")))
-
-r2_res <- tibble()
-for (met in c("SuShiE-Indep",  "Meta-SuSiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")) {
-  df_tmp <- df_r2 %>%
-    filter(name %in% c("SuShiE", met)) %>%
-    mutate(name = factor(name, levels = c("SuShiE", met)))
-  
-  r2_res <- r2_res %>%
-    bind_rows(tidy(lm(value ~ name + study, df_tmp))[2,])
-}
-
-df1 <- r2_res %>%
-  mutate(p.value = ifelse(estimate < 0, pnorm(abs(statistic), lower.tail = FALSE),
-    pnorm(-abs(statistic), lower.tail = FALSE)))
-
-
-heter_genes <- bind_rows(
-  rnaseq_corr %>%
-    inner_join(rnaseq_cov %>%
-        filter(!is.na(snp)) %>%
-        distinct(trait, CSIndex)) %>%
-    select(trait, CSIndex, contains("corr")) %>%
-    pivot_longer(cols = 3:5) %>%
-    rename(type = name, corr = value) %>%
-    mutate(study = "mesa.mrna") %>%
-    select(study, trait, type, CSIndex, corr) %>%
-    filter(corr < 0.5) %>%
-    distinct(trait),
-  proteins_corr %>%
-    inner_join(proteins_cov %>%
-        filter(!is.na(snp)) %>%
-        distinct(trait, CSIndex)) %>%
-    select(trait, CSIndex, contains("corr")) %>%
-    pivot_longer(cols = 3:5) %>%
-    rename(type = name, corr = value) %>%
-    mutate(study = "mesa.mrna") %>%
-    select(study, trait, type, CSIndex, corr) %>%
-    filter(corr < 0.5) %>%
-    distinct(trait),
-  genoa_corr %>%
-    inner_join(genoa_cov %>%
-        filter(!is.na(snp)) %>%
-        distinct(trait, CSIndex)) %>%
-    select(trait, CSIndex, contains("corr")) %>%
-    pivot_longer(cols = 3) %>%
-    rename(type = name, corr = value) %>%
-    mutate(study = "mesa.mrna") %>%
-    select(study, trait, type, CSIndex, corr) %>%
-    filter(corr < 0.9) %>%
-    distinct(trait)
-)
-
-df_r2_heter <- bind_rows(rnaseq_r2,
-  proteins_r2,
-  genoa_r2) %>%
-  filter(type == "r2") %>%
-  select(-cross) %>%
-  pivot_longer(cols = 1:7) %>%
-  group_by(name) %>%
-  mutate(value = ifelse(is.na(value), 0, value)) %>%
-  mutate(name = factor(name,
-    levels = c("sushie", "indep", "meta", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuShiE-Indep",  "Meta-SuSiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")),
-    study = factor(study,
-      levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
-      labels = c("TOPMed-MESA mRNA",
-        "TOPMed-MESA Proteins",
-        "GENOA mRNA"))) %>%
-  filter(trait %in% heter_genes$trait)
-
-r2_res_heter <- tibble()
-for (met in c("SuShiE-Indep",  "Meta-SuSiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")) {
-  df_tmp <- df_r2_heter %>%
-    filter(name %in% c("SuShiE", met)) %>%
-    mutate(name = factor(name, levels = c("SuShiE", met)))
-  
-  r2_res_heter <- r2_res_heter %>%
-    bind_rows(tidy(lm(value ~ name + study, df_tmp))[2,])
-}
-
-df2 <- r2_res_heter %>%
-  mutate(p.value = ifelse(estimate < 0, pnorm(abs(statistic), lower.tail = FALSE),
-    pnorm(-abs(statistic), lower.tail = FALSE)))
-
-df_r2_comp <- df_r2 %>%
-  group_by(name) %>%
-  summarize(mval = mean(value),
-    se_upp = mval + 1.96 * sd(value)/sqrt(n()),
-    se_low = mval - 1.96 * sd(value)/sqrt(n())) %>%
-  mutate(type = "all") %>%
-  bind_rows(df_r2_heter %>%
-      group_by(name) %>%
-      summarize(mval = mean(value),
-        se_upp = mval + 1.96 * sd(value)/sqrt(n()),
-        se_low = mval - 1.96 * sd(value)/sqrt(n())) %>%
-      mutate(type = "heter")) %>%
-  mutate(type = factor(type, levels = c("all", "heter"),
-    labels = c("A: All e/pGenes", "B:e/pGenes Exhibited Heterogeneity")))
-
-ggplot(df_r2_comp,
-  aes(x = name, y = mval, color = name)) +
-  geom_point(size = 1, position=position_dodge(width=0.5)) +
-  geom_errorbar(aes(ymin = se_low, ymax = se_upp),
-    position=position_dodge(width=0.5), width = 0.2) +
-  facet_grid(cols = vars(type)) +
-  scale_color_manual(values = twas_colors) +
-  ylab("Average CV r-squared") +
-  xlab("Prediction Method") +
-  theme(panel.grid.major.x = element_blank(),
-    strip.background = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    panel.border = element_rect(fill = NA),
-    legend.title = element_blank(),
-    legend.position = "bottom",
-    strip.text = element_text(size = 8, face = "bold"),
-    legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    axis.title.x=element_blank(),
-    axis.ticks.x=element_blank(),
-    title = element_text(size = 10, face="bold"),
-    axis.text=element_text(size = 8, face="bold"))
-
-# ggsave("./plots/s23.png", width = p_width, height = p_height)
-
-df_r2_cross <- bind_rows(rnaseq_r2,
-  proteins_r2,
-  genoa_r2) %>%
-  filter(type == "r2") %>%
-  select(sushie, cross, type, trait, study) %>%
-  pivot_longer(cols = 1:2) %>%
-  group_by(name) %>%
-  mutate(value = ifelse(is.na(value), 0, value)) %>%
-  mutate(name = factor(name,
-    levels = c("sushie", "cross"),
-    labels = c("Ancestry-matched weights", "Cross-ancestry weights")),
-    study = factor(study,
-      levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
-      labels = c("TOPMed-MESA mRNA",
-        "TOPMed-MESA Proteins",
-        "GENOA mRNA"))) %>%
-  group_by(name) %>%
-  summarize(mval = mean(value),
-    se_upp = mval + 1.96 * sd(value)/sqrt(n()),
-    se_low = mval - 1.96 * sd(value)/sqrt(n())) 
-
-cross_colors <- c("#1b9e77", "#ff7f00")
-
-ggplot(df_r2_cross, aes(x=name, y = mval, color=name)) +
-  geom_point(size = 1, position=position_dodge(width=0.5)) +
-  geom_errorbar(aes(ymin = se_low, ymax = se_upp),
-    position=position_dodge(width=0.5), width = 0.2) +
-  scale_color_manual(values = cross_colors) +
-  ylab("Average CV r-squared") +
-  theme(panel.grid.major.x = element_blank(),
-    strip.background = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    panel.border = element_rect(fill = NA),
-    legend.title = element_blank(),
-    legend.position = "bottom",
-    strip.text = element_text(size = 8, face = "bold"),
-    legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold"),
-    axis.title.x=element_blank(),
-    title = element_text(size = 10, face="bold"),
-    axis.text=element_text(size = 8, face="bold"),
-    text=element_text(size = 8))
-
-# ggsave("./plots/s24.png", width = p_width/2, height = p_height)
-
-df_r2_cross2 <- bind_rows(rnaseq_r2,
-  proteins_r2,
-  genoa_r2) %>%
-  filter(type == "r2") %>%
-  select(sushie, cross, type, trait, study) %>%
-  pivot_longer(cols = 1:2) %>%
-  group_by(name) %>%
-  mutate(value = ifelse(is.na(value), 0, value)) %>%
-  mutate(name = factor(name,
-    levels = c("sushie", "cross"),
-    labels = c("Ancestry-matched weights", "Cross-ancestry weights")),
-    study = factor(study,
-      levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
-      labels = c("TOPMed-MESA mRNA",
-        "TOPMed-MESA Proteins",
-        "GENOA mRNA")))
-
-tidy(lm(value ~ name + study, df_r2_cross2))
-
-rnaseq_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.sushie_cs.tsv.gz") %>%
+rnaseq_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz") %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.mrna") %>%
   distinct()
 
-proteins_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.sushie_cs.tsv.gz")%>%
+proteins_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")%>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.proteins") %>%
   distinct()
 
-genoa_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.sushie_cs.tsv.gz") %>%
+genoa_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz") %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "genoa.mrna") %>%
@@ -263,20 +46,19 @@ cov_genes_list <- bind_rows(rnaseq_cov_simple,
 nrow(rnaseq_cov_simple) + nrow(genoa_cov_simple)
 nrow(proteins_cov_simple)
 
-
-rnaseq_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.mega_cs.tsv.gz") %>%
+rnaseq_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.mega_cs.tsv.gz") %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.mrna") %>%
   distinct()
 
-proteins_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.mega_cs.tsv.gz")%>%
+proteins_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.mega_cs.tsv.gz")%>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.proteins") %>%
   distinct()
 
-genoa_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.mega_cs.tsv.gz") %>%
+genoa_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.mega_cs.tsv.gz") %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "genoa.mrna") %>%
@@ -286,13 +68,75 @@ mega_genes_list <- bind_rows(rnaseq_mega_simple,
   proteins_mega_simple,
   genoa_mega_simple)
 
+mesusie_genes_list <- bind_rows(
+  read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_mesusie_cs.tsv.gz") %>%
+    distinct(trait) %>%
+    rename(gene = trait) %>%
+    mutate(study = "mesa.mrna"),
+  read_tsv("~/Documents/github/data/sushie_results/real2/proteins_mesusie_cs.tsv.gz") %>%
+    distinct(trait) %>%
+    rename(gene = trait) %>%
+    mutate(study = "mesa.proteins"),
+  read_tsv("~/Documents/github/data/sushie_results/real2/genoa_mesusie_cs.tsv.gz") %>%
+    distinct(trait) %>%
+    rename(gene = trait) %>%
+    mutate(study = "genoa.mrna")
+)
+
+df_twas <- read_tsv("~/Documents/github/data/sushie_results/real2/sushie_twas.tsv.gz")
 
 wbc_traits <- c("WBC", "MON", "NEU", "EOS", "BAS", "LYM")
-df_twas <- read_tsv(
-  "~/Documents/github/data/sushie_results/real/sushie_twas.tsv.gz") %>%
-  filter(pheno %in% wbc_traits)
+
+twas_out <- df_twas %>%
+  filter(term %in% "sushie") %>%
+  filter(pheno %in% wbc_traits) %>%
+  filter(p.value <= 0.05/23000) %>%
+  select(Phenotype = pheno,
+    Study = study,
+    Gene = gene,
+    `Estimate (Beta)` = estimate,
+    Statistic = statistic,
+    `Two-sided P-value` = p.value,
+    `EUR Sample Size` = n_eur,
+    `AFR Sample Size` = n_afr,
+    `HIS Sample Size` = n_his) %>%
+  mutate(Study = factor(Study, 
+    levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
+    labels = c("TOPMed-MESA mRNA", "TOPMed-MESA Proteins", "GENOA mRNA"))) %>%
+  arrange(Phenotype, Study, Gene)
+
+# write_tsv(twas_out, "./tables/s14.tsv")
+
+# qqplot
+qq_twas <-  df_twas %>%
+  filter(term %in% "sushie") %>%
+  filter(pheno %in% wbc_traits) %>%
+  mutate(term = "SuShiE") %>%
+  mutate(study = factor(study, 
+    levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
+    labels = c("TOPMed-MESA mRNA", "TOPMed-MESA Proteins", "GENOA mRNA")))
+
+ggplot(qq_twas, aes(sample = -log(p.value))) +
+  stat_qq(aes(color = term), distribution = qexp) +
+  stat_qq_line(distribution = qexp) +
+  scale_color_manual(values = twas_colors) +
+  facet_grid(rows = vars(pheno), cols = vars(study), scales = "free") +
+  theme(panel.grid.major.x = element_blank(),
+    strip.background = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    panel.border = element_rect(fill = NA),
+    legend.title = element_blank(),
+    legend.text = element_text(face = "bold", size = 6),
+    legend.position = "bottom",
+    # legend.box.background = element_rect(colour = "black"),
+    legend.key = element_rect(colour = "transparent", fill = "white"),
+    axis.title=element_blank(),
+    axis.text = element_text(face = "bold", size = 6)) 
+
+# ggsave("./plots/s27.png", width = p_width-1, height = p_height+3)
 
 df_twas %>%
+  filter(pheno %in% wbc_traits) %>%
   inner_join(cov_genes_list) %>%
   mutate(n_total = n_eur + n_afr + n_his) %>%
   select(pheno, study, n_total) %>%
@@ -300,6 +144,7 @@ df_twas %>%
   summarize(m = mean(n_total))
 
 df_twas %>%
+  filter(pheno %in% wbc_traits) %>%
   inner_join(cov_genes_list) %>%
   pivot_longer(cols = c(n_eur, n_afr, n_his)) %>%
   select(pheno, study, name, value) %>%
@@ -308,45 +153,277 @@ df_twas %>%
   summarize(m = mean(value))
 
 df_twas %>%
+  filter(!pheno %in% wbc_traits) %>%
   inner_join(cov_genes_list) %>%
-  mutate(n_total = n_eur+n_afr+n_his) %>%
+  mutate(n_total = n_eur + n_afr + n_his) %>%
   select(pheno, study, n_total) %>%
   filter(study != "genoa.mrna") %>%
   group_by(pheno) %>%
   summarize(m = mean(n_total))
 
 df_twas %>%
+  filter(!pheno %in% wbc_traits) %>%
+  inner_join(cov_genes_list) %>%
+  pivot_longer(cols = c(n_eur, n_afr, n_his)) %>%
+  select(pheno, study, name, value) %>%
+  filter(study != "genoa.mrna") %>%
+  group_by(name, pheno) %>%
+  summarize(m = mean(value))
+
+df_twas %>%
+  filter(pheno %in% wbc_traits) %>%
   inner_join(cov_genes_list) %>%
   mutate(n_total = n_eur+n_afr+n_his) %>%
   select(pheno, study, n_total) %>%
   filter(study != "genoa.mrna") %>%
-  # group_by(pheno) %>%
+  group_by(pheno) %>%
   summarize(m = mean(n_total))
 
 104242 - mean(c(79589, 82238, 84805, 80885, 86313))
 
 cov_twas <- df_twas %>%
-  filter(term == "df_anc") %>%
+  filter(pheno %in% wbc_traits) %>%
+  filter(term == "sushie") %>%
   inner_join(cov_genes_list) 
 
 cov_twas %>%
+  filter(pheno %in% wbc_traits) %>%
   filter(p.value < 0.05/23000) %>%
   summarize(n = n())
 
 cov_twas %>%
+  filter(pheno %in% wbc_traits) %>%
   filter(p.value < 0.05/23000) %>%
   group_by(pheno) %>%
   summarize(n = n())
 
-199/221
+179/195
 
-sig_res <- cov_twas %>%
-  filter(p.value < 0.05/23000)  %>%
-  select(pheno, study, gene, estimate, statistic, p.value, n_eur, n_afr, n_his)
+mega_twas <- df_twas %>%
+  filter(pheno %in% wbc_traits) %>%
+  filter(term == "mega") %>%
+  inner_join(mega_genes_list)
 
-# write_tsv(sig_res, "./tables/s10.tsv")
+mesusie_twas <- df_twas %>%
+  filter(pheno %in% wbc_traits) %>%
+  filter(term == "mesusie") %>%
+  inner_join(mesusie_genes_list)
+
+df_wbc_tmp1 <- df_twas %>%
+  filter(term %in% c("sushie", "mega")) %>%
+  mutate(term = factor(term, levels = c("sushie", "mega"))) %>%
+  filter(pheno %in% wbc_traits) %>%
+  group_by(pheno, gene) %>%
+  filter(n() == 2) %>%
+  mutate(s2 = statistic^2) %>%
+  select(term, s2, gene, pheno, study)
+
+df_wbc_tmp2 <- df_twas %>%
+  filter(term %in% c("sushie", "mesusie")) %>%
+  mutate(term = factor(term, levels = c("sushie", "mesusie"))) %>%
+  filter(pheno %in% wbc_traits) %>%
+  group_by(pheno, gene) %>%
+  filter(n() == 2) %>%
+  mutate(s2 = statistic^2) %>%
+  select(term, s2, gene, pheno, study)
+
+# perform bootstrap for the standard error
+set.seed(123)
+n_rep <- 100
+c1_comp <- c()
+c2_comp <- c()
+for (idx in 1:n_rep) {
+  print(idx)
+  name_genes <- unique(df_wbc_tmp1$gene)  
+  name_genes <- name_genes[sample(1:length(name_genes),
+    length(name_genes), replace = TRUE)]
+  
+  df_wbc_tmp11 <- tibble(gene = name_genes) %>%
+    left_join(df_wbc_tmp1,
+      by = "gene")
+  
+  c1_comp <- c(c1_comp,
+    (tidy(lm(s2 ~ term + pheno +study, df_wbc_tmp11)) %>%
+        filter(grepl("term", term)))$estimate
+  )
+  
+  name_genes <- unique(df_wbc_tmp2$gene)
+  name_genes <- name_genes[sample(1:length(name_genes),
+    length(name_genes), replace = TRUE)]
+  
+  df_wbc_tmp22 <- tibble(gene = name_genes) %>%
+    left_join(df_wbc_tmp2,
+      by = "gene")
+  
+  c2_comp <- c(c2_comp,
+    (tidy(lm(s2 ~ term + pheno +study, df_wbc_tmp22)) %>%
+        filter(grepl("term", term)))$estimate
+  )
+}
+
+tmp_meta <- bind_rows(
+  tidy(lm(s2 ~ term + pheno +study, df_wbc_tmp1)) %>%
+    filter(grepl("term", term)),
+  tidy(lm(s2 ~ term + pheno +study, df_wbc_tmp2)) %>%
+    filter(grepl("term", term))
+) 
 
 
+
+tmp_meta$bs_se <- c(sd(c1_comp), sd(c2_comp))
+
+tmp_meta %>%
+  mutate(newp = pnorm(abs(estimate/bs_se), lower.tail = FALSE))
+
+tmp_meta %>%
+  mutate(weight = 1/(bs_se^2)) %>%
+  summarize(weighted_mean = sum(estimate * weight) / sum(weight),
+    se = sqrt(1/sum(weight)),
+    p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
+
+cov_twas %>%
+  filter(p.value < 0.05/23000) %>%
+  summarize(n = n())
+
+mega_twas %>%
+  filter(p.value < 0.05/23000) %>%
+  summarize(n = n())
+
+mesusie_twas %>%
+  filter(p.value < 0.05/23000) %>%
+  summarize(n = n())
+
+195-168
+195-143
+195/168
+195/143
+195 - (168+143)/2
+195 /((168+143)/2)
+195-168
+195-143
+
+
+# qqplot
+qq_twas2 <-  df_twas %>%
+  filter(term %in% c("sushie", "mega", "mesusie")) %>%
+  filter(pheno %in% c("sex", "smoke")) %>%
+  mutate(term = factor(term,
+    levels = c("sushie", "mega", "mesusie"),
+    labels = c("SuShiE", "SuSiE", "MESuSiE"))) %>%
+  mutate(study = factor(study, 
+    levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
+    labels = c("TOPMed-MESA mRNA", "TOPMed-MESA Proteins", "GENOA mRNA")))
+
+ggplot(qq_twas2, aes(sample = -log(p.value))) +
+  stat_qq(aes(color = term), distribution = qexp) +
+  stat_qq_line(distribution = qexp) +
+  scale_color_manual(values = twas_colors) +
+  facet_grid(rows = vars(pheno), cols = vars(study), scales = "free") +
+  theme(panel.grid.major.x = element_blank(),
+    strip.background = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    panel.border = element_rect(fill = NA),
+    legend.title = element_blank(),
+    legend.text = element_text(face = "bold", size = 6),
+    legend.position = "bottom",
+    # legend.box.background = element_rect(colour = "black"),
+    legend.key = element_rect(colour = "transparent", fill = "white"),
+    axis.title=element_blank(),
+    axis.text = element_text(face = "bold", size = 6)) 
+
+# ggsave("./plots/s28.png", width = p_width-1, height = p_height+3)
+
+df_eds <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_eds.tsv")
+df_pli <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_pli_new.tsv")
+df_rvis <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_rvis.tsv")
+df_shet <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_shet_new.tsv")
+
+df_scores <- df_eds %>% 
+  mutate(score = "EDS",
+    q25 = quantile(EDS, 0.1),
+    q75 = quantile(EDS, 0.9),
+    Cate = ifelse(EDS < q25, "Low",
+      ifelse(EDS > q75, "High", "Middle"))) %>%
+  rename(value = EDS) %>%
+  select(trait, value, score, Cate) %>%
+  bind_rows(
+    df_rvis %>% 
+      mutate(score = "RVIS",
+        q25 = quantile(RVIS, 0.1),
+        q75 = quantile(RVIS, 0.9),
+        Cate = ifelse(RVIS < q25, "High",
+          ifelse(RVIS > q75, "Low", "Middle"))) %>%
+      rename(value = RVIS) %>%
+      select(trait, value, score, Cate) ,
+    df_shet %>% 
+      mutate(score = "s_het",
+        q25 = quantile(s_het, 0.1),
+        q75 = quantile(s_het, 0.9),
+        Cate = ifelse(s_het < q25, "Low",
+          ifelse(s_het > q75, "High", "Middle"))) %>%
+      rename(value = `s_het`) %>%
+      select(trait, value, score, Cate), 
+    df_pli %>%
+      rename(score = name) %>%
+      group_by(score) %>%
+      mutate(q25 = quantile(value, 0.1),
+        q75 = quantile(value, 0.9)) %>%
+      ungroup() %>%
+      mutate(Cate = ifelse(score == "pLI",
+        ifelse(value < 0.1, "Low",
+          ifelse(value > 0.9, "High", "Middle")),
+        ifelse(value < q25, "High",
+          ifelse(value > q75, "Low", "Middle"))))%>%
+      select(trait, value, score, Cate))
+
+
+df_wk1 <- cov_twas %>%
+  select(type = term, statistic, gene, pheno, study) %>%
+  mutate(chisq_twas = statistic^2,
+    trait = gene,
+    gene = gsub("_.*", "", gene)) %>%
+  left_join(df_scores %>%
+      rename(gene = trait)) %>%
+  filter(!is.na(value))
+
+df_wk2 <- mega_twas %>%
+  select(type = term, statistic, gene, pheno, study) %>%
+  mutate(chisq_twas = statistic^2,
+    trait = gene,
+    gene = gsub("_.*", "", gene)) %>%
+  left_join(df_scores %>%
+      rename(gene = trait)) %>%
+  filter(!is.na(value))
+
+df_wk3 <- mesusie_twas %>%
+  select(type = term, statistic, gene, pheno, study) %>%
+  mutate(chisq_twas = statistic^2,
+    trait = gene,
+    gene = gsub("_.*", "", gene)) %>%
+  left_join(df_scores %>%
+      rename(gene = trait)) %>%
+  filter(!is.na(value))
+
+df_wk <- bind_rows(df_wk1, df_wk2, df_wk3)
+
+df_asso <- df_wk %>%
+  nest_by(type, score) %>%
+  mutate(mod = list(lm(value ~ chisq_twas +pheno +study, data = data))) %>%
+  reframe(tidy(mod)) %>%
+  filter(term == "chisq_twas")  %>%
+  mutate(score = factor(score, levels = c("pLI", "LOEUF", "s_het", "RVIS", "EDS")),
+    type = factor(type, levels = c("sushie", "mega", "mesusie"))) %>%
+  arrange(type, score)
+
+pnorm(abs((sum(df_asso$statistic[1:5]^2) - sum(df_asso$statistic[6:10]^2))/sqrt(20)),
+  lower.tail = FALSE)
+
+pnorm(abs((sum(df_asso$statistic[1:5]^2) - sum(df_asso$statistic[11:15]^2))/sqrt(20)),
+  lower.tail = FALSE)
+
+# write_tsv(select(df_asso, estimate, statistic, p.value), "./tables/s15.tsv")
+
+# validation
 # lu et al
 df_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/gencode.v34.gene.only.tsv.gz")
 
@@ -476,21 +553,6 @@ all_twas_sig %>%
   group_by(pheno) %>%
   summarize(n = n())
 
-mega_twas <- df_twas %>%
-  filter(term == "df_meg") %>%
-  inner_join(mega_genes_list)
-
-mean(cov_twas$statistic^2)
-mean(mega_twas$statistic^2)
-
-
-mega_twas %>%
-  filter(p.value < 0.05/23000) %>%
-  summarize(n = n())
-
-221-177
-221/177
-
 cov_twas %>%
   filter(study != "mesa.proteins") %>%
   filter(p.value < 0.05/23000) %>%
@@ -515,11 +577,25 @@ mega_twas %>%
     dem = n(),
     ratio = num/dem)
 
-prop.test(c(119, 101), c(211, 169))
+mesusie_twas %>%
+  filter(study != "mesa.proteins") %>%
+  filter(p.value < 0.05/23000) %>%
+  select(gene, study, pheno) %>%
+  mutate(full_gene = gene,
+    gene = gsub("_.+", "", gene)) %>%
+  left_join(all_twas_sig %>%
+      mutate(rep = 1)) %>%
+  summarize(num = sum(!is.na(rep)),
+    dem = n(),
+    ratio = num/dem)
 
+prop.test(c(110, 98), c(189, 162))
+prop.test(c(110, 87), c(189, 141))
+
+# main figure 5
 sig_thresh <- qnorm(0.05/23000, lower.tail = FALSE)
 
-df_twas <- cov_twas %>%
+main_twas1 <- cov_twas %>%
   select(study, gene, pheno, sushie = statistic) %>%
   inner_join(mega_twas %>%
       select(study, gene, pheno, susie = statistic)) %>%
@@ -530,13 +606,20 @@ df_twas <- cov_twas %>%
         "Neither"))),
     type = factor(type, levels = c("Both",
       "SuShiE",
-      "SuSiE",
+      "SuSiE", "MESuSiE",
       "Neither")))
 
-p1 <- ggplot(df_twas, aes(x = susie, y = sushie, color = type)) +
+all_levels <- c("Both",
+  "SuShiE",
+  "SuSiE", "MESuSiE",
+  "Neither")
+
+p1 <- ggplot(main_twas1, aes(x = susie, y = sushie, color = type)) +
   geom_point() +
-  geom_smooth(method = "lm", color="#f4a582", alpha=0.5) +
-  scale_color_manual(values = c("#a6611a", "#1b9e77", "#e7298a", "lightgrey")) +
+  geom_abline(slope=1, intercept = 0, color = "black", linetype = "dashed") +
+  scale_color_manual(values =
+      c("#c994c7", "#1b9e77", "#e7298a", "#e6ab02", "lightgrey"),
+    drop=FALSE) +
   xlab(expression(bold("SuSiE T/PWAS" ~ t))) +
   ylab(expression(bold("SuShiE T/PWAS" ~ t))) +
   theme(panel.grid.major.x = element_blank(),
@@ -550,88 +633,33 @@ p1 <- ggplot(df_twas, aes(x = susie, y = sushie, color = type)) +
     axis.title=element_text(face="bold", size = 7),
     axis.text = element_text(face = "bold", size = 6)) 
 
+main_twas2 <- cov_twas %>%
+  select(study, gene, pheno, sushie = statistic) %>%
+  inner_join(mesusie_twas %>%
+      select(study, gene, pheno, mesusie = statistic)) %>%
+  mutate(type = ifelse(abs(sushie) > sig_thresh &
+      abs(mesusie) > sig_thresh, "Both",
+    ifelse(abs(sushie) > sig_thresh, "SuShiE",
+      ifelse(abs(mesusie) > sig_thresh, "MESuSiE",
+        "Neither"))),
+    type = factor(type, levels = c("Both",
+      "SuShiE",
+      "MESuSiE",
+      "Neither")))
 
-df_eds <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_eds.tsv")
-df_pli <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_pli_new.tsv")
-df_rvis <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_rvis.tsv")
-df_shet <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_shet.tsv")
-
-df_scores <- df_eds %>% 
-  mutate(score = "EDS",
-    q25 = quantile(EDS, 0.1),
-    q75 = quantile(EDS, 0.9),
-    Cate = ifelse(EDS < q25, "Low",
-      ifelse(EDS > q75, "High", "Middle"))) %>%
-  rename(value = EDS) %>%
-  select(trait, value, score, Cate) %>%
-  bind_rows(
-    df_rvis %>% 
-      mutate(score = "RVIS",
-        q25 = quantile(RVIS, 0.1),
-        q75 = quantile(RVIS, 0.9),
-        Cate = ifelse(RVIS < q25, "High",
-          ifelse(RVIS > q75, "Low", "Middle"))) %>%
-      rename(value = RVIS) %>%
-      select(trait, value, score, Cate) ,
-    df_shet %>% 
-      mutate(score = "s_het",
-        q25 = quantile(s_het, 0.1),
-        q75 = quantile(s_het, 0.9),
-        Cate = ifelse(s_het < q25, "Low",
-          ifelse(s_het > q75, "High", "Middle"))) %>%
-      rename(value = `s_het`) %>%
-      select(trait, value, score, Cate), 
-    df_pli %>%
-      rename(score = name) %>%
-      group_by(score) %>%
-      mutate(q25 = quantile(value, 0.1),
-        q75 = quantile(value, 0.9)) %>%
-      ungroup() %>%
-      mutate(Cate = ifelse(score == "pLI",
-        ifelse(value < 0.1, "Low",
-          ifelse(value > 0.9, "High", "Middle")),
-        ifelse(value < q25, "High",
-          ifelse(value > q75, "Low", "Middle"))))%>%
-      select(trait, value, score, Cate))
-
-
-
-df_wk1 <- cov_twas %>%
-  select(type = term, statistic, gene, pheno, study) %>%
-  mutate(chisq_twas = statistic^2,
-    trait = gene,
-    gene = gsub("_.*", "", gene)) %>%
-  left_join(df_scores %>%
-      rename(gene = trait)) %>%
-  filter(!is.na(value))
-
-df_wk2 <- mega_twas %>%
-  select(type = term, statistic, gene, pheno, study) %>%
-  mutate(chisq_twas = statistic^2,
-    trait = gene,
-    gene = gsub("_.*", "", gene)) %>%
-  left_join(df_scores %>%
-      rename(gene = trait)) %>%
-  filter(!is.na(value))
-
-df_wk <- bind_rows(df_wk1, df_wk2)
-
-
-df_asso <- df_wk %>%
-  nest_by(type, score) %>%
-  mutate(mod = list(lm(value ~ chisq_twas +pheno +study, data = data))) %>%
-  reframe(tidy(mod)) %>%
-  filter(term == "chisq_twas")  %>%
-  mutate(p.value = p.value/2,
-    score = factor(score, levels = c("pLI", "LOEUF", "s_het", "RVIS", "EDS")),
-    type = factor(type, levels = c("df_anc", "df_meg"))) %>%
-  arrange(type, score)
-
-pnorm(abs((sum(df_asso$statistic[1:5]^2) - sum(df_asso$statistic[6:10]^2))/sqrt(20)),
-  lower.tail = FALSE)
-
-
-# write_tsv(df_asso, "./tables/s11.tsv")
+p2 <- ggplot(main_twas2, aes(x = mesusie, y = sushie, color = type)) +
+  geom_point() +
+  geom_abline(slope=1, intercept = 0, color = "black", linetype = "dashed") +
+  scale_color_manual(values = c("#c994c7", "#1b9e77", "#e6ab02", "lightgrey")) +
+  xlab(expression(bold("MESuSiE T/PWAS" ~ t))) +
+  ylab(expression(bold("SuShiE T/PWAS" ~ t))) +
+  theme(panel.grid.major.x = element_blank(),
+    strip.background = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    panel.border = element_rect(fill = NA),
+    legend.position = "none",
+    axis.title=element_text(face="bold", size = 7),
+    axis.text = element_text(face = "bold", size = 6)) 
 
 
 tt1 <- df_wk1 %>%
@@ -650,21 +678,27 @@ tt2 <- df_wk2 %>%
     upp_bound = mvalue+1.96*se) %>%
   mutate(method = "SuSiE")
 
+tt3 <- df_wk3 %>%
+  group_by(Cate, score) %>%
+  summarize(mvalue = mean(chisq_twas),
+    se = sd(chisq_twas)/sqrt(n()),
+    low_bound = mvalue - 1.96 *se,
+    upp_bound = mvalue+1.96*se) %>%
+  mutate(method = "MESuSiE")
 
-tt <- bind_rows(tt1, tt2) %>%
-  mutate(method = factor(method, levels = c("SuShiE", "SuSiE")),
+tt <- bind_rows(tt1, tt2, tt3) %>%
+  mutate(method = factor(method, levels = c("SuShiE", "SuSiE", "MESuSiE")),
     score = factor(score, levels = c("pLI", "LOEUF", "s_het", "RVIS", "EDS"),
       labels = c("bold(pLI)", "bold(LOEUF)", "bold(s[het])", "bold(RVIS)",
         "bold(EDS)")),
     Cate = factor(Cate, levels = c("Low", "Middle", "High")))
 
-
-p2 <- ggplot(tt, aes(x = Cate, y = mvalue, fill = method, color = method)) +
+p3 <- ggplot(tt, aes(x = Cate, y = mvalue, fill = method, color = method)) +
   geom_point(position=position_dodge(width=0.5), shape=21, size=2) +
   geom_errorbar(aes(ymin = low_bound, ymax = upp_bound),
     position=position_dodge(width=0.5), width = 0.2) +
-  scale_fill_manual(values = c("#1b9e77", "#e7298a")) +
-  scale_color_manual(values = c("#1b9e77", "#e7298a")) +
+  scale_fill_manual(values = c("#1b9e77", "#e7298a", "#e6ab02")) +
+  scale_color_manual(values = c("#1b9e77", "#e7298a", "#e6ab02")) +
   ylab(expression(bold("Average T/PWAS "~ Chi^2))) +
   xlab("Constraint Group") +
   facet_grid(cols = vars(score), labeller = label_parsed) +
@@ -672,66 +706,41 @@ p2 <- ggplot(tt, aes(x = Cate, y = mvalue, fill = method, color = method)) +
     strip.background = element_blank(),
     panel.background = element_rect(fill = "white"),
     panel.border = element_rect(fill = NA),
-    legend.title = element_blank(),
-    legend.text = element_text(face = "bold", size = 6),
     legend.position = "none",
     strip.text.x = element_text(face = "bold"),
     # legend.box.background = element_rect(colour = "black"),
-    legend.key = element_rect(colour = "transparent", fill = "white"),
     axis.title=element_text(face="bold", size = 7),
     axis.text = element_text(face = "bold", size = 6)) 
+
 library(patchwork)
-p1+p2 +plot_layout(design = "AABBBBB", guides = "collect") &
-  theme(legend.position="bottom")
-# + plot_layout(guides = 'collect')
-# ggarrange(p1, p2, common.legend = TRUE, align = "h", legend = "bottom", labels = c("A", "B"), widths = c(1, 2.5))
+p1_legend <- cowplot::get_legend(p1)
+try_design <- "
+AB
+AB
+AB
+AB
+CC
+CC
+CC
+CC
+DD
+"
+p1+p2 + p3+p1_legend+ plot_layout(design = try_design, guides = "collect") &
+  theme(legend.position="none")
 
-# ggsave("./plots/p5.png", width = p_width, height = p_height+0.7)
+# ggsave("./plots/p5.png", width = p_width-2, height = p_height+2)
 
+tidy(lm(sushie ~susie + study, main_twas1))
 
-df_shet_new <- df_shet %>%
-  mutate(quant = ntile(s_het, 10)) %>%
-  filter(quant %in% c(1, 10))
+tmp1 <- main_twas1 %>%
+  mutate(sushie2 = sushie^2,
+    susie2 = susie^2)
 
-haha <- cov_twas %>%
-  mutate(chisq = statistic^2) %>%
-  select(term, chisq, gene, pheno) %>%
-  bind_rows(mega_twas %>%
-      mutate(chisq = statistic^2) %>%
-      select(term, chisq, gene, pheno)) %>%
-  mutate(trait = gsub("_.+", "", gene)) %>%
-  filter(trait %in% filter(df_shet_new , quant ==10)$trait) %>%
-  pivot_wider(names_from = term, values_from = chisq) %>%
-  mutate(diff = df_anc - df_meg) %>%
-  filter(!is.na(diff))
+tidy(t.test(tmp1$sushie2, tmp1$susie2, alternative = "greater"))
 
+tmp2 <- main_twas2 %>%
+  mutate(sushie2 = sushie^2,
+    mesusie2 = mesusie^2)
 
-# qqplot
-total_twas <- bind_rows(cov_twas, mega_twas) %>%
-  mutate(term = factor(term, levels = c("df_anc", "df_meg"),
-    labels = c("SuShiE T/PWAS", "SuSiE T/PWAS")),
-    study = factor(study, levels = c("mesa.mrna", "mesa.proteins", "genoa.mrna"),
-      labels = c("TOPMed-MESA mRNA",
-        "TOPMed-MESA Protein", "GENOA mRNA")))
-
-ggplot(total_twas, aes(sample = -log(p.value))) +
-  stat_qq(aes(color = term), distribution = qexp) +
-  stat_qq_line(distribution = qexp) +
-  scale_color_manual(values = c("#1b9e77", "#e7298a")) +
-  facet_grid(rows = vars(pheno), cols = vars(study), scales = "free") +
-  theme(panel.grid.major.x = element_blank(),
-    strip.background = element_blank(),
-    panel.background = element_rect(fill = "white"),
-    panel.border = element_rect(fill = NA),
-    legend.title = element_blank(),
-    legend.text = element_text(face = "bold", size = 6),
-    legend.position = "bottom",
-    # legend.box.background = element_rect(colour = "black"),
-    legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_blank(),
-    axis.text = element_text(face = "bold", size = 6)) 
-
-# ggsave("./plots/s21.png", width = p_width-1, height = p_height+3)
-
-
+tidy(t.test(tmp2$sushie2, tmp2$mesusie2, alternative = "greater"))
 

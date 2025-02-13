@@ -1,9 +1,10 @@
 #!/bin/bash
-#SBATCH --time=6:00:00
-#SBATCH --mem=8Gb
-#SBATCH --array=1-133
+#SBATCH --time=3:00:00
+#SBATCH --mem=12Gb
+#SBATCH --array=1-319
 #SBATCH --mail-type=all
 #SBATCH --mail-user=zeyunlu@usc.edu
+#SBATCH --partition=conti
 
 if [ ! $SLURM_ARRAY_TASK_ID ]; then
   NR=$1
@@ -13,18 +14,27 @@ else
 fi
 
 # 3189
-# 3192 = 133 * 24
+# 3190 = 319 * 10
 
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
+module load gcc/8.3.0
+module load openblas/0.3.8
+module load r/4.1.0
+
+# SCRIPTF=/home1/zeyunlu/github
+OUT=/scratch1/zeyunlu/sushie_interval
+
+SCRIPTF=/project/nmancuso_8/zeyunlu/projects
+
 PLINK=/project/nmancuso_8/zeyunlu/tools/plink2
-SCRATCH=/scratch1/zeyunlu/sushie
+SCRATCH=/project/nmancuso_8/data/sushie/meta_data
 
 COVAR=${SCRATCH}/interval_covar.tsv
 
-start=`python -c "print( 1 + 24 *int(int($NR-1)))"`
-stop=$((start + 23))
+start=`python -c "print( 1 + 10 *int(int($NR-1)))"`
+stop=$((start + 9))
 
 bigTMP=/scratch1/zeyunlu/temp_interval/tempf_${NR}
 
@@ -59,7 +69,7 @@ do
     --rm-dup force-first --maf 0.01 --geno 0.1 --hwe midp 1e-6 \
     --make-bed --keep $GENO_KEEP --out $TMPDIR/${ID}.geno
 
-  python ${SCRATCH}/extract_pheno.py \
+  python ${SCRIPTF}/sushie-data-codes/real_data/utils/extract_pheno.py \
     --file $PHENO \
     --gene $NAME \
     --subject $PHENO_KEEP \
@@ -73,10 +83,10 @@ do
   fi
 
   sushie finemap \
-  --pheno $TMPDIR/${ID}.pheno.sushie.pheno \
+  --pheno $TMPDIR/${ID}.pheno \
   --covar $COVAR \
   --plink $TMPDIR/${ID}.geno \
-  --her --alphas --numpy  \
+  --her --alphas --remove-ambiguous  \
   --trait ${ID} \
   --output $TMPDIR/${ID}.normal
 

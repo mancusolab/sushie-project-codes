@@ -8,14 +8,14 @@ library(org.Hs.eg.db)
 df_ref <- read_tsv("~/Documents/github/data/sushie_results/gencode.v34.gene.only.tsv.gz")
 
 # EDS
-df_eds <- read_excel("~/Documents/github/data/sushie_results/eds.xlsx") %>%
+df_eds <- read_excel("~/Documents/github/data/sushie_results/Constraint/eds.xlsx") %>%
   dplyr::select(trait = GeneSymbol, EDS) %>%
   group_by(trait) %>%
   summarize(EDS = mean(EDS))
 
 write_tsv(df_eds, "~/Documents/github/data/sushie_results/df_eds.tsv")
 
-tmp_df_rvis <- read_excel("~/Documents/github/data/sushie_results/rvis.xlsx")
+tmp_df_rvis <- read_excel("~/Documents/github/data/sushie_results/Constraint/rvis.xlsx")
 colnames(tmp_df_rvis) <- c("trait", "RVIS", "RVIS_percentile")
 
 na_rvis <- tmp_df_rvis %>%
@@ -97,20 +97,14 @@ df_pli <- bind_rows(df_pli1, df_pli2) %>%
 
 write_tsv(df_pli, "~/Documents/github/data/sushie_results/df_pli.tsv")
 
-df_shet <- read_tsv("~/Documents/github/data/sushie_results/s_het.tsv") %>%
-  dplyr::select(trait = ensg, s_het=post_mean)
-  
-write_tsv(df_shet, "~/Documents/github/data/sushie_results/df_shet.tsv")
-  
-
 df_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/gencode.v34.gene.only.tsv.gz")
 
 df_tmp <- read_tsv("~/Downloads/gnomad.v4.0.constraint_metrics.tsv") %>%
   filter(grepl("ENST", transcript)) %>%
-  select(gene, pLI = lof.pLI, LOEUF = lof.oe_ci.upper, Z = syn.z_score) %>%
+  dplyr::select(gene, pLI = lof.pLI, LOEUF = lof.oe_ci.upper, Z = syn.z_score) %>%
   pivot_longer(cols = c(pLI, LOEUF)) %>%
   group_by(gene, name) %>%
-  summarize(value= mean(value, na.rm = TRUE))
+  dplyr::summarize(value= mean(value, na.rm = TRUE))
 
 new_pli <- df_tmp %>%
   inner_join(df_ref, by = c("gene" = "NAME")) %>%
@@ -123,3 +117,8 @@ new_pli <- df_tmp %>%
 
 write_tsv(new_pli, "~/Documents/github/data/sushie_results/Constraint/df_pli_new.tsv")
 
+
+df_shet <- read_excel("~/Documents/github/data/sushie_results/Constraint/shet_new.xlsx",sheet = 2) %>%
+  dplyr::select(trait = ensg, s_het=post_mean)
+
+write_tsv(df_shet, "~/Documents/github/data/sushie_results/Constraint/df_shet_new.tsv")

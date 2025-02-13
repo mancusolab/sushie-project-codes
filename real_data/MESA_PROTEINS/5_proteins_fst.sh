@@ -20,7 +20,7 @@ source /home1/zeyunlu/init.sh
 conda activate jax2
 
 PLINK=/project/nmancuso_8/zeyunlu/tools/plink2
-SCRATCH=/scratch1/zeyunlu/sushie
+SCRATCH=/project/nmancuso_8/data/sushie/meta_data
 
 start=`python -c "print( 1 + 40 *int(int($NR-1)))"`
 stop=$((start + 39))
@@ -42,13 +42,13 @@ do
 
   # get genotype data
   bfile=/project/nmancuso_8/data/sushie/plink/TOPMED.WGS.chr${CHR}.filtered.analysis
-  wfile=/scratch1/zeyunlu/sushie_proteins/weights/${ID}.normal.sushie.weights.tsv
-  csfile=/scratch1/zeyunlu/sushie_proteins/cs/${ID}.normal.sushie.cs.tsv
+  wfile=/scratch1/zeyunlu/sushie_proteins/sushie/weights/${ID}.normal.sushie.weights.tsv
+  # csfile=/scratch1/zeyunlu/sushie_proteins/cs/${ID}.normal.sushie.cs.tsv
 
   if [ -f ${wfile} ]; then
     mkdir -p $TMPDIR
     awk 'NR > 1 {print $3}' $wfile > $TMPDIR/${ID}.snp
-    awk 'NR > 1 {print $3}' $csfile > $TMPDIR/${ID}.cs.snp
+    # awk 'NR > 1 {print $3}' $csfile > $TMPDIR/${ID}.cs.snp
 
     for pop in EUR AFR HIS
     do
@@ -66,14 +66,15 @@ do
       ${TMPDIR}/${ID}_all_snp.fst.summary \
       > /scratch1/zeyunlu/sushie_proteins/fst/${ID}_all_snp.fst.summary
 
-    if grep -q '^$' $TMPDIR/${ID}.cs.snp; then
-      echo "The empty file."
-    else
-      ${PLINK} --bfile ${bfile}  --extract $TMPDIR/${ID}.cs.snp \
-        --fst CATPHENO --within  $TMPDIR/all.pt --out ${TMPDIR}/${ID}_cs_snp
-      awk -v id="$ID" 'BEGIN{OFS=FS="\t"} NR==1{print $0, "trait"} NR>1{print $0, id}' \
-        ${TMPDIR}/${ID}_cs_snp.fst.summary \
-        > /scratch1/zeyunlu/sushie_proteins/fst/${ID}_cs_snp.fst.summary
-    fi
+    rm -rf $TMPDIR/*
+#    if grep -q '^$' $TMPDIR/${ID}.cs.snp; then
+#      echo "The empty file."
+#    else
+#      ${PLINK} --bfile ${bfile}  --extract $TMPDIR/${ID}.cs.snp \
+#        --fst CATPHENO --within  $TMPDIR/all.pt --out ${TMPDIR}/${ID}_cs_snp
+#      awk -v id="$ID" 'BEGIN{OFS=FS="\t"} NR==1{print $0, "trait"} NR>1{print $0, id}' \
+#        ${TMPDIR}/${ID}_cs_snp.fst.summary \
+#        > /scratch1/zeyunlu/sushie_proteins/fst/${ID}_cs_snp.fst.summary
+#    fi
   fi
 done

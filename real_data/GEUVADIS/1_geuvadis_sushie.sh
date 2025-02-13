@@ -1,11 +1,12 @@
 #!/bin/bash
-#SBATCH --time=6:00:00
-#SBATCH --mem=4Gb
-#SBATCH --array=1-843
+#SBATCH --time=3:00:00
+#SBATCH --mem=16Gb
+#SBATCH --array=1400-2023
 #SBATCH --mail-type=all
 #SBATCH --mail-user=zeyunlu@usc.edu
+#SBATCH --partition=conti
 
-if [ ! $SLURM_ARRAY_TASK_ID ]; then
+if [ ! "$SLURM_ARRAY_TASK_ID" ]; then
   NR=$1
   SCRATCHDIR=`echo $PWD`
 else
@@ -13,23 +14,32 @@ else
 fi
 
 # 20228
-# 20232 = 843 * 24
+# 20230 = 2023 * 10
 
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
+module load gcc/8.3.0
+module load openblas/0.3.8
+module load r/4.1.0
+
+# SCRIPTF=/home1/zeyunlu/github
+OUT=/scratch1/zeyunlu/sushie_geuvadis
+
+SCRIPTF=/project/nmancuso_8/zeyunlu/projects
+
 PLINK=/project/nmancuso_8/zeyunlu/tools/plink2
-SCRATCH=/scratch1/zeyunlu/sushie
+SCRATCH=/project/nmancuso_8/data/sushie/meta_data
 
 EUR_COVAR=${SCRATCH}/geuvadis_EUR_covar.tsv
 YRI_COVAR=${SCRATCH}/geuvadis_YRI_covar.tsv
 
-start=`python -c "print( 1 + 24 *int(int($NR-1)))"`
-stop=$((start + 23))
-
 bigTMP=/scratch1/zeyunlu/temp_geuvadis/tempf_${NR}
 
-mkdir ${bigTMP}
+mkdir -p ${bigTMP}
+
+start=`python -c "print( 1 + 10 *int(int($NR-1)))"`
+stop=$((start + 9))
 
 for IDX in `seq $start $stop`
 do
@@ -62,7 +72,7 @@ do
       --rm-dup force-first --maf 0.01 --geno 0.1 --hwe midp 1e-6 \
       --make-bed --keep $KEEP --out $TMPDIR/${ID}.${pop}.geno
 
-    python ${SCRATCH}/extract_pheno.py \
+    python ${SCRIPTF}/sushie-data-codes/real_data/utils/extract_pheno.py \
       --file $PHENO \
       --gene $ID \
       --subject $KEEP \
@@ -76,27 +86,110 @@ do
   fi
 
   sushie finemap \
-  --pheno $TMPDIR/${ID}.EUR.pheno.sushie.pheno $TMPDIR/${ID}.YRI.pheno.sushie.pheno \
+  --pheno $TMPDIR/${ID}.EUR.pheno $TMPDIR/${ID}.YRI.pheno \
   --covar $EUR_COVAR $YRI_COVAR\
   --plink  $TMPDIR/${ID}.EUR.geno $TMPDIR/${ID}.YRI.geno \
-  --her --alphas --numpy --meta --mega  \
+  --her --alphas --meta --mega \
   --trait ${ID} \
   --output $TMPDIR/${ID}.normal
 
+  # this is usually the case that we have less than 100 SNPs
+  if [ ! -e "$TMPDIR/${ID}.normal.sushie.weights.tsv" ]; then
+    continue
+  fi
+
   sushie finemap \
-  --pheno $TMPDIR/${ID}.EUR.pheno.sushie.pheno $TMPDIR/${ID}.YRI.pheno.sushie.pheno \
-  --covar $EUR_COVAR $YRI_COVAR \
+  --pheno $TMPDIR/${ID}.EUR.pheno $TMPDIR/${ID}.YRI.pheno \
+  --covar $EUR_COVAR $YRI_COVAR\
   --plink  $TMPDIR/${ID}.EUR.geno $TMPDIR/${ID}.YRI.geno \
-  --alphas --no-update --rho 0 --alphas --numpy \
-  --trait ${ID}\
+  --no-update --rho 0 --alphas \
+  --trait $ID \
   --output $TMPDIR/${ID}.indep
 
-  OUT=/scratch1/zeyunlu/sushie_geuvadis
+  mv $TMPDIR/${ID}.normal.sushie.corr.tsv $OUT/sushie/corr/
+  mv $TMPDIR/${ID}.normal.sushie.her.tsv $OUT/sushie//her/
+  mv $TMPDIR/${ID}.*.cs.tsv $OUT/sushie/cs/
+  mv $TMPDIR/${ID}.*.alphas.tsv $OUT/sushie/alphas/
+  cp $TMPDIR/${ID}.*.weights.tsv $OUT/sushie//weights/
 
-  mv $TMPDIR/${ID}.normal.sushie.corr.tsv $OUT/corr/
-  mv $TMPDIR/${ID}.normal.sushie.her.tsv $OUT/her/
-  mv $TMPDIR/${ID}.*.cs.tsv $OUT/cs/
-  mv $TMPDIR/${ID}.*.alphas.tsv $OUT/alphas/
-  mv $TMPDIR/${ID}.*.weights.tsv $OUT/weights/
+  for pop in EUR YRI
+  do
+    KEEP=${SCRATCH}/geuvadis_${pop}_pt.tsv
+    COVAR=${SCRATCH}/geuvadis_${pop}_covar_2iid_col.tsv
+
+    awk 'BEGIN {FS=OFS="\t"} {print $1, $0}'  $TMPDIR/${ID}.${pop}.pheno >  $TMPDIR/${ID}.${pop}.pheno2
+
+    # perform eQTLscan using plink
+    ${PLINK} --bfile $TMPDIR/${ID}.${pop}.geno --keep $KEEP --glm 'hide-covar' omit-ref \
+    --covar $COVAR --covar-variance-standardize --pheno $TMPDIR/${ID}.${pop}.pheno2 \
+    --out ${TMPDIR}/${ID}.${pop}
+  done
+
+  # run mesusie
+  python ${SCRIPTF}/sushie-data-codes/real_data/utils/run_multisusie_2pop.py \
+      --ss_file ${TMPDIR}/${ID}.EUR.PHENO1.glm.linear:${TMPDIR}/${ID}.YRI.PHENO1.glm.linear \
+      --geno_file $TMPDIR/${ID}.EUR.geno:$TMPDIR/${ID}.YRI.geno \
+      --wgt_file $TMPDIR/${ID}.normal.sushie.weights.tsv \
+      --rm_amb True \
+      --trait ${ID} \
+      --tmp_out $TMPDIR/${ID}.tmp \
+      --out $OUT/multisusie
+
+  # run in-sample susiex
+  ss1=$(awk 'NR==1 {print $1}' $TMPDIR/${ID}.tmp.md.tsv)
+  ss2=$(awk 'NR==2 {print $1}' $TMPDIR/${ID}.tmp.md.tsv)
+  bp1=$(awk 'NR==1 {print $2}' $TMPDIR/${ID}.tmp.md.tsv)
+  bp2=$(awk 'NR==2 {print $2}' $TMPDIR/${ID}.tmp.md.tsv)
+
+  # run susiex
+  /project/nmancuso_8/zeyunlu/tools/SuSiEx/bin_static/SuSiEx \
+  --sst_file=$TMPDIR/${ID}.tmp.inss.ans0.tsv,$TMPDIR/${ID}.tmp.inss.ans1.tsv \
+  --n_gwas=${ss1},${ss2} \
+  --ref_file=$TMPDIR/${ID}.EUR.geno,$TMPDIR/${ID}.YRI.geno \
+  --ld_file=$TMPDIR/${ID}.EUR.geno,$TMPDIR/${ID}.YRI.geno \
+  --out_dir=$TMPDIR \
+  --out_name=susiex.${ID} \
+  --chr=${CHR} \
+  --bp=${bp1},${bp2} \
+  --chr_col=1,1 \
+  --snp_col=2,2 \
+  --bp_col=3,3 \
+  --a1_col=5,5 \
+  --a2_col=4,4 \
+  --eff_col=7,7 \
+  --se_col=8,8 \
+  --pval_col=9,9 \
+  --plink=/project/nmancuso_8/zeyunlu/tools/SuSiEx/utilities/plink \
+  --maf=0.01 \
+  --level=0.95 \
+  --n_sig=10 \
+  --pval_thresh=1 \
+  --max_iter=500
+
+  # prepare susiex out
+  Rscript ${SCRIPTF}/sushie-data-codes/real_data/utils/process_susiex.R \
+    $TMPDIR/susiex.${ID}.cs \
+    $TMPDIR/susiex.${ID}.snp \
+    ${ID} ${CHR} ${OUT}/susiex
+
+  # prepare data for xmap and mesusie
+  Rscript ${SCRIPTF}/sushie-data-codes/real_data/utils/prepare_2pop.R \
+    $TMPDIR/${ID}.tmp.inss.ans0.tsv \
+    $TMPDIR/${ID}.tmp.inss.ans1.tsv \
+    $TMPDIR/${ID}.tmp.inld.ans0.tsv \
+    $TMPDIR/${ID}.tmp.inld.ans1.tsv \
+    $TMPDIR/${ID}.tmp.inldsc.tsv \
+    373:89 ${ID} $TMPDIR/prepare.${ID}.rdata
+
+  # run xmap and mesusie
+  Rscript ${SCRIPTF}/sushie-data-codes/real_data/utils/run_mesusie_2pop.R \
+    $TMPDIR/prepare.${ID}.rdata \
+    $OUT/mesusie
+
+#  Rscript ${SCRIPTF}/sushie-data-codes/real_data/utils/run_xmap_2pop.R \
+#    $TMPDIR/prepare.${ID}.rdata \
+#    $OUT/xmap
+
+  rm -rf $TMPDIR
 
 done

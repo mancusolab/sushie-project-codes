@@ -131,7 +131,7 @@ def main(args):
 
     plink_path = args.prefix_pop.split(":")
 
-    output_dic = hf._gen_ld(plink_path)
+    output_dic, _ = hf._gen_ld(plink_path)
 
     rng_key, X, y, bvec, bvec_all, s2e, g, b_covar = simulation_sushie(rng_key, output_dic, [args.N] * 3, args.L1,
                                                                        args.L3, [args.h2g] * 3, [args.rho] * 3)
@@ -140,44 +140,34 @@ def main(args):
 
     # perform sushie for 1 pop
     pop_idx = random.choice(p1, 3, shape=(1,), replace=False)
-    sushie1 = infer_sushie([X[jnp.take(pop_idx, 0)]], [y[jnp.take(pop_idx, 0)]], L=args.L2)
+    sushie1 = infer_sushie([X[jnp.take(pop_idx, 0)]], [y[jnp.take(pop_idx, 0)]], L=args.L2, threshold=0.95)
 
     # perform sushie for 2 pop,
 
     pop_idx2 = random.choice(p2, 3, shape=(2,), replace=False)
-    sushie2 = infer_sushie(
-        [X[jnp.take(pop_idx2, 0)][0:int(args.N / 2), :], X[jnp.take(pop_idx2, 1)][0:int(args.N / 2), :]],
-        [y[jnp.take(pop_idx2, 0)][0:int(args.N / 2)], y[jnp.take(pop_idx2, 1)][0:int(args.N / 2)]], L=args.L2)
+    X_2pop = [X[jnp.take(pop_idx2, 0)][0:int(args.N / 2), :], X[jnp.take(pop_idx2, 1)][0:int(args.N / 2), :]]
+    y_2pop = [y[jnp.take(pop_idx2, 0)][0:int(args.N / 2)], y[jnp.take(pop_idx2, 1)][0:int(args.N / 2)]]
+    sushie2 = infer_sushie(X_2pop, y_2pop, L=args.L2, threshold=0.95)
 
     # perform sushie for 3 pop,
-    newX2 = [X[0][0:int(args.N / 3), :], X[1][0:int(args.N / 3), :], X[2][0:int(args.N / 3), :]]
-    newy2 = [y[0][0:int(args.N / 3)], y[1][0:int(args.N / 3)], y[2][0:int(args.N / 3)]]
-    sushie3 = infer_sushie(newX2, newy2, L=args.L2)
+    X_3pop = [X[0][0:int(args.N / 3), :], X[1][0:int(args.N / 3), :], X[2][0:int(args.N / 3), :]]
+    y_3pop = [y[0][0:int(args.N / 3)], y[1][0:int(args.N / 3)], y[2][0:int(args.N / 3)]]
+    sushie3 = infer_sushie(X_3pop, y_3pop, L=args.L2, threshold=0.95)
 
     # PIP
-    df_pip = pd.DataFrame(bvec, columns=["ancestry1", "ancestry2", "ancestry3"])
-    df_pip["idx"] = g[0:args.L1]
-    df_pip["sushie1"] = sushie1.pip_all[g[0:args.L1]]
-    df_pip["sushie2"] = sushie2.pip_all[g[0:args.L1]]
-    df_pip["sushie3"] = sushie3.pip_all[g[0:args.L1]]
+    df_pip = pd.DataFrame()
+    df_pip["CSIndex"] = jnp.argsort(-jnp.array(bvec ** 2)[:, 0]) + 1
+    df_pip["SNPIndex_0based"] = g[0:args.L1]
+    df_pip["SNPIndex_1based"] = g[0:args.L1] + 1
+    df_pip["sushie1_pip"] = sushie1.pip_all[g[0:args.L1]]
+    df_pip["sushie1_cali"] = jnp.isin(g[0:args.L1], sushie1.cs.SNPIndex.values.astype(int)).astype(int)
+    df_pip["sushie2_pip"] = sushie2.pip_all[g[0:args.L1]]
+    df_pip["sushie2_cali"] = jnp.isin(g[0:args.L1], sushie2.cs.SNPIndex.values.astype(int)).astype(int)
+    df_pip["sushie3_pip"] = sushie3.pip_all[g[0:args.L1]]
+    df_pip["sushie3_cali"] = jnp.isin(g[0:args.L1], sushie3.cs.SNPIndex.values.astype(int)).astype(int)
 
     df_pip = add_annotation(df_pip, args)
     df_pip.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.pip.tsv", sep="\t", index=False)
-
-    # sensitivity
-    prec = [
-        jnp.sum(jnp.isin(df_pip.idx.values, sushie1.cs.SNPIndex.values.astype(int))),
-        jnp.sum(jnp.isin(df_pip.idx.values, sushie2.cs.SNPIndex.values.astype(int))),
-        jnp.sum(jnp.isin(df_pip.idx.values, sushie3.cs.SNPIndex.values.astype(int))),
-    ]
-
-    df_prop = pd.DataFrame(data={
-        "method": ["sushie1", "sushie2", "sushie3"],
-        "prec": prec,
-    })
-
-    df_prop = add_annotation(df_prop, args)
-    df_prop.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.prop.tsv", sep="\t", index=False)
 
     sushie_cs1 = sushie1.cs.groupby("CSIndex")["SNPIndex"].count().reset_index()
     sushie_cs2 = sushie2.cs.groupby("CSIndex")["SNPIndex"].count().reset_index()
@@ -186,7 +176,7 @@ def main(args):
     df_cs = pd.DataFrame(data=jnp.arange(args.L2) + 1, columns=["CSIndex"])
     df_cs = df_cs.merge(sushie_cs1, how="left", on="CSIndex").rename(columns={"SNPIndex": "sushie1"}) \
         .merge(sushie_cs2, how="left", on="CSIndex").rename(columns={"SNPIndex": "sushie2"}) \
-        .merge(sushie_cs3, how="left", on="CSIndex").rename(columns={"SNPIndex": "sushie3"}).fillna(0)
+        .merge(sushie_cs3, how="left", on="CSIndex").rename(columns={"SNPIndex": "sushie3"})
 
     df_cs = add_annotation(df_cs, args)
     df_cs.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.cs.tsv", sep="\t", index=False)

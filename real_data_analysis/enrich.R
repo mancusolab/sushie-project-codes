@@ -12,11 +12,11 @@ legend_size <- 8
 bar_width <- 0.5
 
 # rnaseq
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.sushie_cs.tsv.gz")
+rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz")
 
-proteins_cov<- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.sushie_cs.tsv.gz")
+proteins_cov<- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.sushie_cs.tsv.gz")
+genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
 
 
 # qtl
@@ -96,7 +96,7 @@ mp1 <- ggplot(df_qtl, aes(x=new_n, y=perc_val, fill = study)) +
 
 leg <- get_legend(mp1, position = "bottom")
 
-rnaseq_tss <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_tss.tsv.gz") %>%
+rnaseq_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_tss.tsv.gz") %>%
   group_by(Type) %>%
   mutate(n_gene = length(unique(gene))) %>%
   group_by(bins, Type) %>%
@@ -105,7 +105,7 @@ rnaseq_tss <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_tss.t
     n_gene = mean(n_gene)) %>%
   mutate(study = "TOPMed-MESA mRNA")
 
-proteins_tss <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_tss.tsv.gz") %>%
+proteins_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_tss.tsv.gz") %>%
   group_by(Type) %>%
   mutate(n_gene = length(unique(gene))) %>%
   group_by(bins, Type) %>%
@@ -114,7 +114,7 @@ proteins_tss <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_t
     n_gene = mean(n_gene)) %>%
   mutate(study = "TOPMed-MESA Protein")
 
-genoa_tss <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_tss.tsv.gz") %>%
+genoa_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_tss.tsv.gz") %>%
   group_by(Type) %>%
   mutate(n_gene = length(unique(gene))) %>%
   group_by(bins, Type) %>%
@@ -145,13 +145,13 @@ mp2 <- ggplot(df_pip, aes(x = bins, y = avg_signal, color=study)) +
   main_theme_p1()
 
 # enrich
-rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_enrich_all.tsv.gz") %>%
+rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_enrich_all.tsv.gz") %>%
   filter(!anno %in% c("tss_all", "tss_protein"))
 
-proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_enrich_all.tsv.gz") %>%
+proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_enrich_all.tsv.gz") %>%
   filter(!anno %in% c("tss_all", "tss_protein"))
 
-genoa_enrich <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_enrich_all.tsv.gz") %>%
+genoa_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_enrich_all.tsv.gz") %>%
   filter(!anno %in% c("tss_all", "tss_protein"))
 
 enrich_list <- unique(rnaseq_enrich$anno)
@@ -191,7 +191,6 @@ proteins_anno <- proteins_enrich %>%
     n = n()) %>%
   mutate(study = "TOPMed-MESA Protein")
 
-
 genoa_anno <- genoa_enrich %>%
   filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
   filter(converged == 1 & reg == 0) %>%
@@ -227,7 +226,7 @@ mp3 <- ggplot(df_anno,
     position=position_dodge(width=0.5), width = 0.2) +
   ylab(bquote(bold(Log[2](Enrichment)))) +
   xlab("Functional Annotations") +
-  scale_y_continuous(limits = c(-0.5,1.05), breaks = c(-0.5, 0, 0.5, 1)) +
+  scale_y_continuous(limits = c(-0.6,1.05), breaks = c(-0.5, 0, 0.5, 1)) +
   scale_color_manual(values = main_study_color) +
   geom_hline(yintercept=0, linetype="dashed") +
   main_theme_p1()
@@ -274,7 +273,7 @@ main1 <- ggarrange(mp1, mp2, mp3, align = "h", nrow=1,
   labels = c("A", "B", "C"), font.label = list(size = 10),
   legend.grob =leg, legend = "bottom")
 
-# ggsave("./plots/p3.png", , width = p_width, height = p_height+1)
+# ggsave("./plots/p3.png", width = p_width, height = p_height+1)
 
 mp4 <- ggplot(enrich_res,
   aes(x = reorder(anno, log_est, decreasing = TRUE),
@@ -302,7 +301,7 @@ mp4 <- ggplot(enrich_res,
       margin = margin(t = 10, r = 0, b = 0, l = 0)),
     axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s11.png", , width = p_width-1, height = p_height)
+# ggsave("./plots/s12.png", , width = p_width-1, height = p_height)
 
 # alpha tss
 df_pip <- rnaseq_tss %>%
@@ -337,13 +336,12 @@ ggplot(df_pip, aes(x = bins, y = avg_signal, color=study)) +
     axis.title=element_text(face="bold", size = 8),
     axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s12.png", , width = p_width-1.5, height = p_height+2)
+# ggsave("./plots/s13.png", , width = p_width-1.5, height = p_height+2)
 
 # single effect enrichment
-
 rnaseq_alpha <- rnaseq_enrich %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(!grepl("pip", method)) %>%
+  filter(!grepl("pip", method) & !grepl("cs", method)) %>%
   group_by(anno, method) %>%
   mutate(weight = 1 / (se*2)) %>%
   summarize(meta_est = sum(est*weight)/sum(weight),
@@ -357,7 +355,7 @@ rnaseq_alpha <- rnaseq_enrich %>%
 
 proteins_alpha <- proteins_enrich %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(!grepl("pip", method)) %>%
+  filter(!grepl("pip", method) & !grepl("cs", method)) %>%
   group_by(anno, method) %>%
   mutate(weight = 1 / (se*2)) %>%
   summarize(meta_est = sum(est*weight)/sum(weight),
@@ -371,7 +369,7 @@ proteins_alpha <- proteins_enrich %>%
 
 genoa_alpha <- rnaseq_enrich %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(!grepl("pip", method)) %>%
+  filter(!grepl("pip", method) & !grepl("cs", method)) %>%
   group_by(anno, method) %>%
   mutate(weight = 1 / (se*2)) %>%
   summarize(meta_est = sum(est*weight)/sum(weight),
@@ -383,25 +381,23 @@ genoa_alpha <- rnaseq_enrich %>%
   filter(anno %in% c(encode_list, atac_list, "snATAC-seq-frozen-peaks")) %>%
   mutate(study = "GENOA mRNA")
 
-
-
 anno_alpha_encode <- rnaseq_alpha %>%
   bind_rows(proteins_alpha, genoa_alpha) %>%
-  filter(method %in% paste0("alpha_l", 1:6)) %>%
+  filter(method %in% paste0("cov_l", 1:6)) %>%
   mutate(log_est = meta_est / log(2)) %>%
   filter(anno %in% c("PLS", "pELS", "dELS",  "CTCF-bound", "DNase-H3K4me3")) %>%
   mutate(anno = factor(anno,
     levels = c("PLS", "pELS", "dELS",  "CTCF-bound", "DNase-H3K4me3"),
     labels = c("Promoter", "Proximal\nEnhancer",
       "Distal\nEnhancer", "CTCF", "DNase\nH3K4me3")),
-    method = factor(method, levels = paste0("alpha_l", 1:6),
+    method = factor(method, levels = paste0("cov_l", 1:6),
       labels = paste0("L", 1:6)),
     study = factor(study, levels = c("TOPMed-MESA mRNA",
       "TOPMed-MESA Protein", "GENOA mRNA")))
 
 anno_alpha_chiou <- rnaseq_alpha %>%
   bind_rows(proteins_alpha, genoa_alpha) %>%
-  filter(method %in% paste0("alpha_l", 1:6)) %>%
+  filter(method %in% paste0("cov_l", 1:6)) %>%
   mutate(log_est = meta_est / log(2)) %>%
   filter(anno %in% c("regulatory-T",
     "memory-CD-T", "adaptive-NK", "activated-CD-T",
@@ -417,7 +413,7 @@ anno_alpha_chiou <- rnaseq_alpha %>%
     labels = c("Regulatory\nT", "Memeory\nCD-T",
       "Adaptive\nNK",  "Activated\nCD-T", "Naive\nT", "Naive\nB", "Memory\nB",
       "Non-classical\nMonocyte",  "Classical\nMonocyte", "PBMC")),
-    method = factor(method, levels = paste0("alpha_l", 1:6),
+    method = factor(method, levels = paste0("cov_l", 1:6),
       labels = paste0("L", 1:6)),
     study = factor(study, levels = c("TOPMed-MESA mRNA",
       "TOPMed-MESA Protein", "GENOA mRNA")))
@@ -477,30 +473,40 @@ m2 <- ggplot(anno_alpha_chiou,
 ggarrange(m1, m2, nrow=1, widths=c(1,2), align = "h", common.legend = TRUE,
   legend = "bottom")
 
-# ggsave("./plots/s13.png", , width = p_width+3, height = p_height+5)
+# ggsave("./plots/s14.png", , width = p_width+3, height = p_height+5)
 
 
 # creating tables
 
-rnaseq_indep <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_indep.sushie_cs.tsv.gz")
+rnaseq_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_indep.sushie_cs.tsv.gz")
 
-rnaseq_meta <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.meta_cs.tsv.gz")
+rnaseq_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.meta_cs.tsv.gz")
 
-rnaseq_mega <- read_tsv("~/Documents/github/data/sushie_results/real/rnaseq_normal.mega_cs.tsv.gz")
+rnaseq_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.mega_cs.tsv.gz")
 
+rnaseq_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_susiex_cs.tsv.gz")
 
-proteins_indep <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_indep.sushie_cs.tsv.gz")
+rnaseq_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_mesusie_cs.tsv.gz")
 
-proteins_meta <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.meta_cs.tsv.gz")
+proteins_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_indep.sushie_cs.tsv.gz")
 
-proteins_mega <- read_tsv("~/Documents/github/data/sushie_results/real/proteins_normal.mega_cs.tsv.gz")
+proteins_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.meta_cs.tsv.gz")
 
+proteins_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.mega_cs.tsv.gz")
 
-genoa_indep <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_indep.sushie_cs.tsv.gz")
+proteins_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_susiex_cs.tsv.gz")
 
-genoa_meta <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.meta_cs.tsv.gz")
+proteins_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_mesusie_cs.tsv.gz")
 
-genoa_mega <- read_tsv("~/Documents/github/data/sushie_results/real/genoa_normal.mega_cs.tsv.gz")
+genoa_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_indep.sushie_cs.tsv.gz")
+
+genoa_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.meta_cs.tsv.gz")
+
+genoa_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.mega_cs.tsv.gz")
+
+genoa_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_susiex_cs.tsv.gz")
+
+genoa_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_mesusie_cs.tsv.gz")
 
 
 meta_anno <- tibble(Study = "LDSC", Annotation = ldsc_list) %>%
@@ -606,7 +612,7 @@ table_enrich <- table_enrich_all %>%
   left_join(table_enrich_proteins, by = c("Study", "Annotation")) %>%
   left_join(table_enrich_genoa, by = c("Study", "Annotation"))
 
-# write_tsv(table_enrich, "./tables/s3.tsv")
+# write_tsv(table_enrich %>% select(-Study, - Annotation), "./tables/s5.tsv", col_names=FALSE)
 
 # in-text number 
 enrich_res <- rnaseq_enrich %>%
@@ -639,497 +645,61 @@ enrich_res %>%
   filter(anno %in% c(atac_list, "snATAC-seq-frozen-peaks"))
 
 # method comparison
-
-
-# aggregate
-# pip_indep
-enrich_base_indep <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  bind_rows(proteins_enrich %>%
-      filter(trait %in% filter(proteins_indep, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_cov"),
-    genoa_enrich %>%
-      filter(trait %in% filter(genoa_indep, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_cov")) %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-
-enrich_comp_indep <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_indep") %>%
-  bind_rows(proteins_enrich %>%
-      filter(trait %in% filter(proteins_indep, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_indep"),
-    genoa_enrich %>%
-      filter(trait %in% filter(genoa_indep, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_indep")) %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-enrich_res_indep <- full_join(enrich_base_indep, enrich_comp_indep, by = "type")
-
-enrich_res_indep$compz <- (enrich_base_indep$est - enrich_comp_indep$est)/sqrt(enrich_base_indep$se^2 + enrich_comp_indep$se^2)
-
-enrich_res_indep$compp <- pnorm(abs(enrich_res_indep$compz), lower.tail = FALSE)
-
-
-enrich_base_meta <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  bind_rows(proteins_enrich %>%
-      filter(trait %in% filter(proteins_meta, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_cov"),
-    genoa_enrich %>%
-      filter(trait %in% filter(genoa_meta, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_cov")) %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-
-enrich_comp_meta <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_meta") %>%
-  bind_rows(proteins_enrich %>%
-      filter(trait %in% filter(proteins_meta, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_meta"),
-    genoa_enrich %>%
-      filter(trait %in% filter(genoa_meta, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_meta")) %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-enrich_res_meta <- full_join(enrich_base_meta, enrich_comp_meta, by = "type")
-
-enrich_res_meta$compz <- (enrich_base_meta$est - enrich_comp_meta$est)/sqrt(enrich_base_meta$se^2 + enrich_comp_meta$se^2)
-
-enrich_res_meta$compp <- pnorm(abs(enrich_res_meta$compz), lower.tail = FALSE)
-
-
-enrich_base_mega <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  bind_rows(proteins_enrich %>%
-      filter(trait %in% filter(proteins_mega, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_cov"),
-    genoa_enrich %>%
-      filter(trait %in% filter(genoa_mega, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_cov")) %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_comp_mega <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_mega") %>%
-  bind_rows(proteins_enrich %>%
-      filter(trait %in% filter(proteins_mega, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_mega"),
-    genoa_enrich %>%
-      filter(trait %in% filter(genoa_mega, !is.na(snp))$trait) %>%
-      filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(converged == 1 & reg == 0) %>%
-      filter(method == "pip_mega")) %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_res_mega <- full_join(enrich_base_mega, enrich_comp_mega, by = "type")
-
-enrich_res_mega$compz <- (enrich_base_mega$est - enrich_comp_mega$est)/sqrt(enrich_base_mega$se^2 + enrich_comp_mega$se^2)
-
-enrich_res_mega$compp <- pnorm(abs(enrich_res_mega$compz), lower.tail = FALSE)
-
-total_enrich_res <- bind_rows(enrich_res_indep,
-  enrich_res_meta,
-  enrich_res_mega)
-
-
-# pip_indep
-enrich_base_indep <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-
-enrich_comp_indep <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_indep") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-enrich_res_indep <- full_join(enrich_base_indep, enrich_comp_indep, by = "type")
-
-enrich_res_indep$compz <- (enrich_base_indep$est - enrich_comp_indep$est)/sqrt(enrich_base_indep$se^2 + enrich_comp_indep$se^2)
-
-enrich_res_indep$compp <- pnorm(abs(enrich_res_indep$compz), lower.tail = FALSE)
-
-
-enrich_base_meta <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-
-enrich_comp_meta <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_meta") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-enrich_res_meta <- full_join(enrich_base_meta, enrich_comp_meta, by = "type")
-
-enrich_res_meta$compz <- (enrich_base_meta$est - enrich_comp_meta$est)/sqrt(enrich_base_meta$se^2 + enrich_comp_meta$se^2)
-
-enrich_res_meta$compp <- pnorm(abs(enrich_res_meta$compz), lower.tail = FALSE)
-
-
-enrich_base_mega <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_comp_mega <- rnaseq_enrich %>%
-  filter(trait %in% filter(rnaseq_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_mega") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_res_mega <- full_join(enrich_base_mega, enrich_comp_mega, by = "type")
-
-enrich_res_mega$compz <- (enrich_base_mega$est - enrich_comp_mega$est)/sqrt(enrich_base_mega$se^2 + enrich_comp_mega$se^2)
-
-enrich_res_mega$compp <- pnorm(abs(enrich_res_mega$compz), lower.tail = FALSE)
-
-rnaseq_enrich_res <- bind_rows(enrich_res_indep,
-  enrich_res_meta,
-  enrich_res_mega)
-
-
-
-# pip_indep
-enrich_base_indep <-proteins_enrich %>%
-  filter(trait %in% filter(proteins_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-
-enrich_comp_indep <- proteins_enrich %>%
-  filter(trait %in% filter(proteins_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_indep") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-enrich_res_indep <- full_join(enrich_base_indep, enrich_comp_indep, by = "type")
-
-enrich_res_indep$compz <- (enrich_base_indep$est - enrich_comp_indep$est)/sqrt(enrich_base_indep$se^2 + enrich_comp_indep$se^2)
-
-enrich_res_indep$compp <- pnorm(abs(enrich_res_indep$compz), lower.tail = FALSE)
-
-
-enrich_base_meta <- proteins_enrich %>%
-  filter(trait %in% filter(proteins_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-
-enrich_comp_meta <- proteins_enrich %>%
-  filter(trait %in% filter(proteins_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_meta") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-enrich_res_meta <- full_join(enrich_base_meta, enrich_comp_meta, by = "type")
-
-enrich_res_meta$compz <- (enrich_base_meta$est - enrich_comp_meta$est)/sqrt(enrich_base_meta$se^2 + enrich_comp_meta$se^2)
-
-enrich_res_meta$compp <- pnorm(abs(enrich_res_meta$compz), lower.tail = FALSE)
-
-
-enrich_base_mega <- proteins_enrich %>%
-  filter(trait %in% filter(proteins_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_comp_mega <- proteins_enrich %>%
-  filter(trait %in% filter(proteins_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_mega") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_res_mega <- full_join(enrich_base_mega, enrich_comp_mega, by = "type")
-
-enrich_res_mega$compz <- (enrich_base_mega$est - enrich_comp_mega$est)/sqrt(enrich_base_mega$se^2 + enrich_comp_mega$se^2)
-
-enrich_res_mega$compp <- pnorm(abs(enrich_res_mega$compz), lower.tail = FALSE)
-
-proteins_enrich_res <- bind_rows(enrich_res_indep,
-  enrich_res_meta,
-  enrich_res_mega)
-
-# pip_indep
-enrich_base_indep <- genoa_enrich %>%
-  filter(trait %in% filter(genoa_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-
-enrich_comp_indep <- genoa_enrich %>%
-  filter(trait %in% filter(genoa_indep, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_indep") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "indep")
-
-enrich_res_indep <- full_join(enrich_base_indep, enrich_comp_indep, by = "type")
-
-enrich_res_indep$compz <- (enrich_base_indep$est - enrich_comp_indep$est)/sqrt(enrich_base_indep$se^2 + enrich_comp_indep$se^2)
-
-enrich_res_indep$compp <- pnorm(abs(enrich_res_indep$compz), lower.tail = FALSE)
-
-
-enrich_base_meta <- genoa_enrich %>%
-  filter(trait %in% filter(genoa_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-
-enrich_comp_meta <- genoa_enrich %>%
-  filter(trait %in% filter(genoa_meta, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_meta") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "meta")
-
-enrich_res_meta <- full_join(enrich_base_meta, enrich_comp_meta, by = "type")
-
-enrich_res_meta$compz <- (enrich_base_meta$est - enrich_comp_meta$est)/sqrt(enrich_base_meta$se^2 + enrich_comp_meta$se^2)
-
-enrich_res_meta$compp <- pnorm(abs(enrich_res_meta$compz), lower.tail = FALSE)
-
-
-enrich_base_mega <- genoa_enrich %>%
-  filter(trait %in% filter(genoa_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_cov") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_comp_mega <- genoa_enrich %>%
-  filter(trait %in% filter(genoa_mega, !is.na(snp))$trait) %>%
-  filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-  filter(converged == 1 & reg == 0) %>%
-  filter(method == "pip_mega") %>%
-  filter(anno %in% c(ldsc_list, atac_list, encode_list,
-    "snATAC-seq-frozen-peaks")) %>%
-  ungroup() %>%
-  mutate(weight = 1 / (se*2)) %>%
-  summarize(est = sum(est*weight)/sum(weight),
-    se = 1 / sqrt(sum(weight))) %>%
-  mutate(type = "mega")
-
-enrich_res_mega <- full_join(enrich_base_mega, enrich_comp_mega, by = "type")
-
-enrich_res_mega$compz <- (enrich_base_mega$est - enrich_comp_mega$est)/sqrt(enrich_base_mega$se^2 + enrich_comp_mega$se^2)
-
-enrich_res_mega$compp <- pnorm(abs(enrich_res_mega$compz), lower.tail = FALSE)
-
-genoa_enrich_res <- bind_rows(enrich_res_indep,
-  enrich_res_meta,
-  enrich_res_mega)
-
-
-output_df <-  bind_rows(total_enrich_res, rnaseq_enrich_res,
-  proteins_enrich_res, genoa_enrich_res)
-
-# write_tsv(output_df, "./tables/s4.tsv")
+comp_enrich <- function(df, method_name) {
+  tmp_df <- df %>%
+    filter(converged == 1 & reg == 0) %>%
+    filter(anno %in% c(ldsc_list, atac_list, encode_list,
+      "snATAC-seq-frozen-peaks")) %>%
+    filter(method %in% c("pip_cov", method_name)) %>%
+    group_by(trait, anno) %>%
+    filter(n() == 2) %>%
+    group_by(method) %>%
+    mutate(weight = 1 / (se*2)) %>%
+    summarize(est = sum(est*weight)/sum(weight),
+      se = 1 / sqrt(sum(weight))) %>%
+    mutate(method = ifelse(method == "pip_cov", "SuShiE", "Comp"),
+      type = method_name) %>%
+    pivot_wider(names_from = method, values_from = c(est, se)) %>%
+    mutate(compz = (est_SuShiE - est_Comp) /
+        sqrt(se_SuShiE^2 + se_Comp^2)) %>%
+    select(type, est_SuShiE, se_SuShiE, est_Comp, se_Comp, compz)
+  
+  return(tmp_df)
+}
+
+
+enrich_all <- tibble()
+for (method in c("pip_indep", "pip_meta", "susiex_cs", "mesusie_cs",
+  "pip_mega")) {
+  enrich_all <- enrich_all %>%
+    bind_rows(
+      comp_enrich(bind_rows(rnaseq_enrich,
+        proteins_enrich, genoa_enrich), method) %>%
+        mutate(dataset = "across"),
+      comp_enrich(rnaseq_enrich, method) %>%
+        mutate(dataset = "TOPMed-MESA mRNA"),
+      comp_enrich(proteins_enrich, method) %>%
+        mutate(dataset = "TOPMed-MESA Protein"),
+      comp_enrich(genoa_enrich, method) %>%
+        mutate(dataset = "GENOA mRNA")
+    )
+}
+
+
+df_enrich_comp <- enrich_all %>%
+  mutate(dataset = factor(dataset,levels = c("across",
+    "TOPMed-MESA mRNA", "TOPMed-MESA Protein", "GENOA mRNA")),
+    type = factor(type, levels = c("pip_indep",
+      "pip_meta", "pip_mega", "susiex_cs", "mesusie_cs"),
+      labels = c("SuShiE vs SuShiE-Indep",
+        "SuShiE vs Meta-SuSiE",
+        "SuShiE vs SuSiE",
+        "SuShiE vs SuSiEx",
+        "SuShiE vs MESuSiE"))) %>%
+  select(dataset, type, est_SuShiE, se_SuShiE, est_Comp, se_Comp, compz) %>%
+  arrange(dataset, type)
+
+# write_tsv(df_enrich_comp %>% select(-dataset, -type), "./tables/s6.tsv", col_names=FALSE)
 
 
 # single effect alpha
@@ -1137,14 +707,14 @@ output_df <-  bind_rows(total_enrich_res, rnaseq_enrich_res,
 enrich_res <- rnaseq_enrich %>%
   filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(method %in% paste0("alpha_l", 1:10)) %>%
+  filter(method %in% paste0("cov_l", 1:10)) %>%
   bind_rows(proteins_enrich %>%
       filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
-      filter(method %in% paste0("alpha_l", 1:10)) %>%
+      filter(method %in% paste0("cov_l", 1:10)) %>%
       filter(method == "pip_cov"),
     genoa_enrich %>%
       filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
-      filter(method %in% paste0("alpha_l", 1:10)) %>%
+      filter(method %in% paste0("cov_l", 1:10)) %>%
       filter(method == "pip_cov")) %>%
   filter(anno %in% c(ldsc_list, atac_list, encode_list,
     "snATAC-seq-frozen-peaks")) %>%
@@ -1164,14 +734,13 @@ table_enrich_all <- meta_anno %>%
       ifelse(Study == "LDSC", gsub("LDSC_", "", Annotation), Annotation))) %>%
   arrange(Study, desc(meta_z))
 
-
 # output rnaseq
 enrich_res <- rnaseq_enrich %>%
   filter(anno %in% c(ldsc_list, atac_list, encode_list,
     "snATAC-seq-frozen-peaks")) %>%
   filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait) %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(method %in% paste0("alpha_l", 1:10)) %>%
+  filter(method %in% paste0("cov_l", 1:10)) %>%
   group_by(anno, method) %>%
   mutate(weight = 1 / (se*2)) %>%
   summarize(meta_odds = exp(sum(est*weight)/sum(weight)),
@@ -1194,7 +763,7 @@ enrich_res <- proteins_enrich %>%
     "snATAC-seq-frozen-peaks")) %>%
   filter(trait %in% filter(proteins_cov, !is.na(snp))$trait) %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(method %in% paste0("alpha_l", 1:10)) %>%
+  filter(method %in% paste0("cov_l", 1:10)) %>%
   group_by(anno, method) %>%
   mutate(weight = 1 / (se*2)) %>%
   summarize(meta_odds = exp(sum(est*weight)/sum(weight)),
@@ -1217,7 +786,7 @@ enrich_res <- genoa_enrich %>%
     "snATAC-seq-frozen-peaks")) %>%
   filter(trait %in% filter(genoa_cov, !is.na(snp))$trait) %>%
   filter(converged == 1 & reg == 0) %>%
-  filter(method %in% paste0("alpha_l", 1:10)) %>%
+  filter(method %in% paste0("cov_l", 1:10)) %>%
   group_by(anno, method) %>%
   mutate(weight = 1 / (se*2)) %>%
   summarize(meta_odds = exp(sum(est*weight)/sum(weight)),
@@ -1237,9 +806,10 @@ table_enrich_genoa <- meta_anno %>%
 table_enrich <- table_enrich_all %>%
   left_join(table_enrich_rnaseq, by = c("Study", "Annotation", "method")) %>%
   left_join(table_enrich_proteins, by = c("Study", "Annotation", "method")) %>%
-  left_join(table_enrich_genoa, by = c("Study", "Annotation", "method"))
+  left_join(table_enrich_genoa, by = c("Study", "Annotation", "method")) %>%
+  mutate(method = gsub("cov_l", "L", method))
 
-# write_tsv(table_enrich, "./tables/s5.tsv")
+# write_tsv(table_enrich, "./tables/s7.tsv", col_names=FALSE)
 
 rnaseq_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/mesa_rnaseq_gene_list_noMHC.tsv", col_names = FALSE) %>%
   select(trait = X12, TSS = X6)
@@ -1323,7 +893,7 @@ ggplot(total_dist, aes(x = CSIndex, y = mval, color = study)) +
     axis.title=element_text(face="bold", size = 8),
     axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s14.png", width = p_width-3, height = p_height+3)
+# ggsave("./plots/s15.png", width = p_width-3, height = p_height+3)
 
 
 two_dist <- rnaseq_cov %>%
@@ -1341,7 +911,6 @@ two_dist <- rnaseq_cov %>%
       mutate(dist = abs(pos - TSS) + 1) %>%
       group_by(trait, CSIndex) %>%
       summarize(dist = sum(pip_all*dist) / sum(pip_all)),
-    
     genoa_dist <- genoa_cov %>%
       filter(!is.na(snp)) %>%
       select(snp, pos, CSIndex, pip_all, trait) %>%

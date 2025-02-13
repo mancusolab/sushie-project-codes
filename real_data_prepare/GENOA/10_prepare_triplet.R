@@ -1,4 +1,7 @@
 library(tidyverse)
+library(glue)
+
+scratch_path <- "/project/nmancuso_8/data/sushie/meta_data"
 
 # get gene name
 
@@ -29,16 +32,17 @@ pos_dd <- gencode %>%
 
 write_tsv(pos_dd,
   "/project/nmancuso_8/data/GENOA/processed/expression/genoa_sushie_gene_list.tsv", 
-  col_names = FALSE)
+  col_names = TRUE)
 
-write_tsv(pos_dd, "/scratch1/zeyunlu/sushie/genoa_sushie_gene_list.tsv",
+write_tsv(pos_dd, glue("{scratch_path}/genoa_sushie_gene_list.tsv"),
   col_names = FALSE)
 
 write_tsv(filter(pos_dd, MHC == 0),
-  "/project/nmancuso_8/data/GENOA/processed/expression/genoa_sushie_gene_list_noMHC.tsv", 
-  col_names = FALSE)
+  "/project/nmancuso_8/data/GENOA/processed/expression/genoa_sushie_gene_list_noMHC.tsv",
+  col_names = TRUE)
 
-write_tsv(filter(pos_dd, MHC == 0), "/scratch1/zeyunlu/sushie/genoa_sushie_gene_list_noMHC.tsv",
+write_tsv(filter(pos_dd, MHC == 0),
+  glue("{scratch_path}/genoa_sushie_gene_list_noMHC.tsv"),
   col_names = FALSE)
 
 
@@ -51,8 +55,11 @@ covar2 <- read_tsv("/project/nmancuso_8/data/GENOA/FUSION/covar/aa_covars.tsv") 
   mutate(sex = as.numeric(sex == 2)) %>%
   select(-FID)
 
-write_tsv(covar1, "/project/nmancuso_8/data/GENOA/processed/covariates/ea_covars_sushie.tsv.gz", col_names = FALSE)
-write_tsv(covar2, "/project/nmancuso_8/data/GENOA/processed/covariates/aa_covars_sushie.tsv.gz", col_names = FALSE)
+# write_tsv(covar1, "/project/nmancuso_8/data/GENOA/processed/covariates/ea_covars_sushie.tsv.gz", col_names = FALSE)
+# write_tsv(covar2, "/project/nmancuso_8/data/GENOA/processed/covariates/aa_covars_sushie.tsv.gz", col_names = FALSE)
+
+write_tsv(covar1, glue("{scratch_path}/ea_covars_sushie.tsv.gz"), col_names = FALSE)
+write_tsv(covar2, glue("{scratch_path}/aa_covars_sushie.tsv.gz"), col_names = FALSE)
 
 
 # get pheno
@@ -91,7 +98,10 @@ aa_pheno <- t(aa_tmp[,-1]) %>%
 
 colnames(aa_pheno) <- c("IID", aa_tmp$gene)
 
-# 14034
-write_tsv(ea_pheno, "/project/nmancuso_8/data/GENOA/processed/expression/ea_pheno_sushie.tsv.gz")
-write_tsv(aa_pheno, "/project/nmancuso_8/data/GENOA/processed/expression/aa_pheno_sushie.tsv.gz")
+# # 14034
+# write_tsv(ea_pheno, "/project/nmancuso_8/data/GENOA/processed/expression/ea_pheno_sushie.tsv.gz")
+# write_tsv(aa_pheno, "/project/nmancuso_8/data/GENOA/processed/expression/aa_pheno_sushie.tsv.gz")
+
+write_tsv(ea_pheno, glue("{scratch_path}/ea_pheno_sushie.tsv.gz"))
+write_tsv(aa_pheno, glue("{scratch_path}/aa_pheno_sushie.tsv.gz"))
 

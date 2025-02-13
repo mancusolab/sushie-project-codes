@@ -26,75 +26,33 @@ theme_sim <- function() {
     legend.position = "bottom")
 }
 
-method_colors <- c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
-  "Meta-SuSiE" = "#7570b3", "SuSiE" = "#e7298a")
+method_colors <-c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
+  "Meta-SuSiE" = "#7570b3", "SuSiE" = "#e7298a",
+  "SuSiEx" = "#66a61e", "MESuSiE" = "#e6ab02", "XMAP" = "#a6761d", "XMAP-IND" = "#666666")
 
-twas_colors <- c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
-  "Meta-SuSiE" = "#a6cee3", "SuSiE" = "#e7298a",
-  "LASSO" = "#66a61e", "Elastic Net" = "#e6ab02", "gBLUP" = "#a6761d")
+twas_colors <- c(method_colors,
+  "LASSO" = "#fb8072", "Elastic Net" = "#b3de69", "gBLUP" = "#fccde5")
 
-pop2_pip <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_2pop_pip.tsv.gz")
+# 2 pop general data
 
-ddPIP <- pop2_pip %>%
-  select(sushie, indep, meta, susie, sim, locus, N, L1, L2, L3, h2g, rho) %>%
-  pivot_longer(cols = sushie:susie) %>%
-  group_by(sim, N, L1, L2, L3, h2g, rho, name) %>%
+load("./data/df_2pop.RData")
+
+df_m1 <- df_2pop %>%
+  group_by(sim, N, L1, L2, L3, h2g, rho, name, type) %>%
+  filter(!is.na(value)) %>%
   summarize(mvalue = mean(value),
     se = 1.96 * (sd(value) / sqrt(n()))) %>%
-  mutate(group = "PIP")
-
-cp_pip <- pop2_pip %>%
-  filter(h2g %in% "0.05:0.05" & L1 ==2) %>%
-  filter(L1 == L2 & L3 == 0) %>%
-  filter(N %in% c("200:200", "400:400", "600:600", "800:800")) %>%
-  select(sushie, indep, meta, susie, sim, locus, N, L1, L2, L3, h2g, rho) %>%
-  pivot_longer(cols = sushie:susie) %>%
-  mutate(name = factor(name, levels = c("sushie", "indep", "meta", "susie")))
-
-tidy(lm(value ~ name + L1 + h2g + rho, cp_pip)) %>%
-  mutate(p.value = p.value/2)
-
-pop2_cs <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_2pop_cs.tsv.gz")
-
-ddCS <- pop2_cs %>%
-  select(sushie, indep, meta, susie, sim, CSIndex, locus, N, L1, L2, L3, h2g, rho) %>%
-  filter(sushie != 0 & indep != 0 & meta != 0 & susie != 0) %>%
-  pivot_longer(cols = sushie:susie) %>%
-  group_by(sim, N, L1, L2, L3, h2g, rho, name) %>%
-  summarize(mvalue = mean(value),
-    se = 1.96 * (sd(value) / sqrt(n()))) %>%
-  mutate(group = "CS")
-
-ss2 <- pop2_cs %>%
-  select(sushie, indep, meta, susie, sim, CSIndex, locus, N, L1, L2, L3, h2g, rho) %>%
-  filter(sushie != 0 & indep != 0 & meta != 0 & susie != 0) %>%
-  pivot_longer(cols = sushie:susie) %>%
-  mutate(name = factor(name, levels = c("sushie", "indep", "meta", "susie")))
-
-pop2_prop <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_2pop_prop.tsv.gz")
-
-ddPROP <- pop2_prop %>%
-  pivot_longer(cols = c(prec)) %>%
-  rename(group = name,
-    name = method) %>%
-  group_by(sim, name, N, L1, L2, L3, h2g, rho, group) %>%
-  mutate(value = value/L2) %>%
-  summarize(mvalue = mean(value),
-    se = 1.96 * (sd(value) / sqrt(n())))
-
-main_tt <- bind_rows(ddPIP, ddCS, ddPROP) %>%
-  mutate(name = factor(name,
-    labels = c("SuShiE", "SuShiE-Indep", "Meta-SuSiE", "SuSiE"),
-    levels = c("sushie", "indep", "meta", "susie"))) %>%
-  filter(L1 == 2 & L2 ==2 & L3 == 0 & h2g == "0.05:0.05" & rho == 0.8) %>%
-  filter(N %in% c("200:200", "400:400", "600:600", "800:800")) %>%
+  filter(N %in% c("200:200", "400:400", "600:600", "800:800") &
+      L1 == L2 & L3 == 0 & L1==2 &
+      h2g %in% "0.05:0.05" & 
+      rho %in% c("0.8")) %>%
   mutate(N = case_when(
     N == "200:200" ~ 200,
     N == "400:400" ~ 400,
     N == "600:600" ~ 600,
     N == "800:800" ~ 800))
 
-tmp_p1 <- filter(main_tt, group == "PIP")
+tmp_p1 <- filter(df_m1, type == "PIP")
 
 small_p1 <- ggplot(tmp_p1,
   aes(x = factor(N), y = mvalue, color= factor(name))) +
@@ -106,7 +64,7 @@ small_p1 <- ggplot(tmp_p1,
   xlab("molQTL Sample Size") +
   theme_sim()
 
-tmp_p2 <- filter(main_tt, group == "CS")
+tmp_p2 <- filter(df_m1, type == "CS")
 
 small_p2 <- ggplot(tmp_p2,
   aes(x = factor(N), y = mvalue, color= factor(name))) +
@@ -119,7 +77,7 @@ small_p2 <- ggplot(tmp_p2,
   ylab("CS size") +
   theme_sim()
 
-tmp_p3 <- filter(main_tt, group == "prec")
+tmp_p3 <- filter(df_m1, type == "Calibration")
 
 small_p3 <- ggplot(tmp_p3,
   aes(x = factor(N), y = mvalue, color= factor(name))) +
@@ -132,169 +90,129 @@ small_p3 <- ggplot(tmp_p3,
   xlab("molQTL Sample Size") +
   theme_sim()
 
+sushie_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/sushie_2pop_rho.tsv.gz")
 
-tmp_rho <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_2pop_rho.tsv.gz")
+xmap_in_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_in_2pop_rho.tsv.gz")
 
-df_rho1 <- tmp_rho %>%
-  filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05")
+xmap_ind_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_ind_2pop_rho.tsv.gz")
 
-df_rho1 %>%
-  group_by(L1, L2, h2g, rho, L3, N) %>%
-  summarize(n = n())
+sushie_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/sushie_2pop_cs.tsv.gz")
 
-rho_11 <- df_rho1 %>%
-  group_by(sim, rho) %>%
+xmap_in_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_in_2pop_cs.tsv.gz")
+
+xmap_ind_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_ind_2pop_cs.tsv.gz")
+
+ref_param_rho <- sushie_rho %>%
+  filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
+  distinct(sim, locus, rho)
+
+total_sim <- sushie_cs_pop2 %>%
+  filter(!is.na(sushie)) %>%
+  distinct(sim, locus) %>%
+  bind_rows(xmap_in_cs_pop2 %>%
+      filter(!is.na(xmap)) %>%
+      distinct(sim, locus),
+    xmap_ind_cs_pop2 %>%
+      filter(!is.na(xmap)) %>%
+      distinct(sim, locus)) %>%
+  distinct(sim, locus)
+
+df_rho <- sushie_rho %>%
+  filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
+  filter(Lidx == 1) %>%
+  filter(method == "sushie") %>%
+  select(sim, locus, rho, CSIndex = Lidx, est_rho) %>%
+  inner_join(total_sim) %>%
+  mutate(name = "SuShiE") %>%
+  bind_rows(
+    xmap_in_rho %>%
+      filter(CSIndex == 1) %>%
+      right_join(ref_param_rho) %>%
+      select(sim, locus, rho, CSIndex, est_rho) %>%
+      inner_join(total_sim) %>%
+      mutate(name = "XMAP"),
+    xmap_ind_rho %>%
+      filter(CSIndex == 1) %>%
+      right_join(ref_param_rho) %>%
+      select(sim, locus, rho, CSIndex, est_rho) %>%
+      inner_join(total_sim) %>%
+      mutate(name = "XMAP-IND")
+  ) %>%
+  filter(!is.na(est_rho)) %>%
+  group_by(sim, rho, name) %>%
   summarize(mrho = mean(est_rho),
-    se = 1.96 * (sd(est_rho) / sqrt(n()))) %>%
-  mutate(type ="All CSs")
+    se = 1.96 * (sd(est_rho) / sqrt(n())))
 
-rho_12 <- df_rho1 %>%
-  filter(Lidx==1) %>%
-  group_by(sim, rho) %>%
-  summarize(mrho = mean(est_rho),
-    se = 1.96 * (sd(est_rho) / sqrt(n()))) %>%
-  mutate(type ="First CSs")
-
-rho_13 <- df_rho1 %>%
-  filter(Lidx==2) %>%
-  group_by(sim, rho) %>%
-  summarize(mrho = mean(est_rho),
-    se = 1.96 * (sd(est_rho) / sqrt(n()))) %>%
-  mutate(type ="Second CSs")
-
-rho_all1 <- bind_rows(rho_11, rho_12, rho_13)
-
-small_p4 <- ggplot(rho_all1,
-  aes(x = rho, y = mrho, color = type)) +
-  geom_abline(slope=1, intercept = 0) +
-  geom_point() +
+small_p4 <- ggplot(df_rho,
+  aes(x = factor(rho), y = mrho, color = name)) +
+  geom_point(size=point_size, position=position_dodge(width=0.5)) +
   geom_errorbar(aes(ymin = mrho - se, ymax = mrho + se),
-    width = 0.02) +
-  scale_y_continuous( labels=scaleFUN) +
-  scale_x_continuous(breaks = c(0.01, 0.4, 0.8, 0.99)) +
-  scale_color_brewer(palette = "Paired") +
-  ylab("Est. Effect Size Correlation") +
+    position=position_dodge(width=0.5), width = 0.2) +
+  geom_hline(yintercept = c(0.01, 0.4, 0.8, 0.99),
+    linetype="dashed",color="grey", alpha=0.5) +
+  scale_y_continuous(labels = c("0.01", "0.4", "0.8", "0.99"),
+    breaks = c(0.01, 0.4, 0.8, 0.99)) +
+  scale_color_manual(values = method_colors) +
+  ylab("Estimation") +
   xlab("True Effect Size Correlation") +
   theme_sim() 
 
+load("./data/df_r2twas.RData")
 
-tmp_r2 <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_pred3_r2.tsv.gz")
-
-df_r2 <- tmp_r2 %>%
+df_r2 <- df_r2twas %>%
   filter(h2g == "0.05:0.05" &
-      ngwas == 2e5 & h2ge == 0.3/2000) %>%
-  filter(method %in% c("sushie", "susie", "lasso", "enet", "ridge")) %>%
-  pivot_longer(cols=c(ancestry1_weight1, ancestry2_weight2)) %>%
-  # filter(name == "ancestry2_weight2") %>%
-  filter(!is.na(value)) %>%
-  group_by(sim, N, method) %>%
-  summarize(adj_r2 = mean(value),
-    adj_se = 1.96 * sd(value) / sqrt(n()),
+      ngwas == 2e5 & h2ge == 0.3/2000
+    & type == "R2") %>%
+  group_by(sim, N, name) %>%
+  summarize(mvalue = mean(value),
+    se = 1.96 * sd(value) / sqrt(n()),
     n = n()) %>%
-  mutate(method = factor(method,
-    levels = c("sushie", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")),
-    N = case_when(
+  mutate(N = case_when(
       N == "200:200" ~ 200,
       N == "400:400" ~ 400,
-      N == "600:600" ~ 600,
-      N == "800:800" ~ 800))
+      N == "600:600" ~ 600)) %>%
+  filter(name %in% c("SuShiE", "SuShiE-Indep",
+    "Meta-SuSiE", "SuSiE", "MESuSiE", 
+    "XMAP", "XMAP-IND"))
 
 small_p5 <- ggplot(df_r2,
-  aes(x = factor(N), y = adj_r2, color = method)) +
+  aes(x = factor(N), y = mvalue, color = name)) +
   geom_point(size=point_size, position=position_dodge(width=0.5)) +
   scale_color_manual(values = twas_colors) +
-  geom_errorbar(aes(ymin = adj_r2 - adj_se, ymax = adj_r2 + adj_se),
+  geom_errorbar(aes(ymin = mvalue - se, ymax = mvalue + se),
     width = 0.1, position=position_dodge(width=0.5)) +
-  scale_y_continuous( labels=scaleFUN) +
+  scale_y_continuous(labels=scaleFUN) +
   ylab("Predicted r-sqaured") +
   xlab("Training Sample Size") +
   theme_sim() 
 
-
-cp_r2 <- tmp_r2 %>%
-  filter(h2g == "0.05:0.05" &
-      ngwas == 2e5 & h2ge == 0.3/2000) %>%
-  filter(method %in% c("sushie", "susie", "lasso", "enet", "ridge")) %>%
-  pivot_longer(cols=c(ancestry1_weight1, ancestry2_weight2)) %>%
-  filter(!is.na(value)) %>%
-  mutate(method = factor(method,
-    levels = c("sushie", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")))
-
-tidy(lm(value ~ method + name + N, cp_r2)) %>%
-  mutate(p.value = p.value/2)
-
-tmp_twas <- read_tsv("~/Documents/github/data/sushie_results/sim/sim_pred3_twas.tsv.gz")
-
-df_twas <- tmp_twas %>%
-  filter(N == "400:400" & h2g == "0.05:0.05" & h2ge == 0.3/2000) %>%
-  pivot_longer(cols=c(sushie, indep, meta, susie, enet, lasso, ridge)) %>%
-  mutate(pval = 2 * pnorm(abs(value), lower.tail = FALSE)) %>%
-  group_by(1:n()) %>%
-  mutate(adjpval = min(1, pval*1000)) %>%
-  # filter(ancestry == 2) %>%
-  group_by(sim, h2ge, ngwas, name) %>%
-  summarize(adj_power = mean(adjpval < 0.05),
-    adj_se = 1.96 * sqrt(adj_power * (1 - adj_power) / n())) %>%
-  filter(name %in% c("sushie", "susie", "lasso", "enet", "ridge")) %>%
-  mutate(name = factor(name, levels = c("sushie", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")),
-    ngwas = factor(ngwas,  levels = c(100000, 200000, 300000),
+df_twas <- df_r2twas %>%
+  filter(N == "400:400" & h2g == "0.05:0.05" & h2ge == 0.3/2000 & type == "TWAS") %>%
+  group_by(sim, ngwas, name) %>%
+  summarize(mvalue = mean(value),
+    se = 1.96 * sqrt(sd(value) / n())) %>%
+  mutate(ngwas = factor(ngwas,  levels = c(100000, 200000, 300000),
       labels = c("100k", "200k", "300k"))) %>%
-  rename(method = name) %>%
-  pivot_longer(cols = c(adj_power, adj_se)) %>%
-  separate(name, sep = "_", into = c("type", "name")) %>%
-  pivot_wider(values_from = value, names_from = "name")
+  filter(name %in% c("SuShiE", "SuShiE-Indep",
+    "Meta-SuSiE", "SuSiE", "MESuSiE", 
+    "XMAP", "XMAP-IND"))
 
 small_p6 <- ggplot(df_twas,
-  aes(x = factor(ngwas), y = power, color = method)) +
+  aes(x = factor(ngwas), y = mvalue, color = name)) +
   geom_point(size=point_size, position=position_dodge(width=0.5)) +
   scale_color_manual(values = twas_colors) +
-  geom_errorbar(aes(ymin = power - se, ymax = power + se),
+  geom_errorbar(aes(ymin = mvalue - se, ymax = mvalue + se),
     width = 0.1, position=position_dodge(width=0.5)) +
   scale_y_continuous( labels=scaleFUN) +
   ylab("TWAS Power") +
   xlab("GWAS Sample Size") +
   theme_sim()
 
-cp_twas <- tmp_twas %>%
-  filter(N == "400:400" & h2g == "0.05:0.05" & h2ge == 0.3/2000) %>%
-  pivot_longer(cols=c(sushie, indep, meta, susie, enet, lasso, ridge)) %>%
-  mutate(value = value**2) %>%
-  filter(name %in% c("sushie", "susie", "lasso", "enet", "ridge")) %>%
-  mutate(name = factor(name, levels = c("sushie", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")),
-    ngwas = factor(ngwas,  levels = c(100000, 200000, 300000),
-      labels = c("100k", "200k", "300k")))
+ggarrange(small_p1, small_p2, small_p3, small_p4, small_p5, small_p6,
+  nrow = 3, ncol = 2, labels = c("A", "B", "C", "D", "E", "F"),
+  common.legend = TRUE, legend="bottom", font.label = list(size=8))
 
-tidy(lm(value ~ name+ ngwas +factor(ancestry), cp_twas)) %>%
-  mutate(p.value = p.value/2)
-
-library(cowplot)
-legend1 <- get_legend(small_p1)
-legend2 <- get_legend(small_p4)
-legend3 <- get_legend(small_p5)
-
-prow1 <- plot_grid(small_p1 + theme(legend.position="none"),
-  small_p2 + theme(legend.position="none"),
-  small_p3 + theme(legend.position="none"),
-  nrow = 1, align = "h",
-  labels = c("A", "B", "C"), label_size=10)
-
-prow2 <- plot_grid(small_p4 + theme(legend.position="none"),
-  small_p5 + theme(legend.position="none"),
-  small_p6 + theme(legend.position="none"),
-  nrow = 1, align = "h",
-  labels = c("D", "E", "F"), label_size= 10)
-
-leg2 <- plot_grid(legend2, legend3, rel_widths = c(1, 2))
-
-plot_grid(prow1, legend1, prow2, leg2, nrow=4, rel_heights = c(10,1,10,1))
-
-ggsave(filename = "./manuscript_plots/main/p1.png",
-  width = p_width, height = 5)
-
-
+# ggsave(filename = "./manuscript_plots/p1.png",
+#   width = p_width, height = 6)
 
 
