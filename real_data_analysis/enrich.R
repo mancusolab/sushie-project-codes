@@ -12,8 +12,8 @@ legend_size <- 8
 bar_width <- 0.5
 
 # change the data folder to the zenodo-downloaded data folder
-data_folder <- "~/Documents/github/data/sushie_results/real2"
-metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+data_folder <- "~/Downloads/sushie_real_data_results/all_results/"
+metadata_folder <- "~/Downloads/sushie_real_data_results/metadata/"
 
 # rnaseq
 rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))

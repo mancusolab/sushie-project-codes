@@ -6,8 +6,8 @@ library(glue)
 library(broom)
 
 # change the data folder to the zenodo-downloaded data folder
-data_folder <- "~/Documents/github/data/sushie_results/real2"
-metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+data_folder <- "~/Downloads/sushie_real_data_results/all_results/"
+metadata_folder <- "~/Downloads/sushie_real_data_results/metadata/"
 
 # abstract and introduction
 rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))

@@ -4,9 +4,9 @@ library(broom)
 source("./utils.R")
 
 # change the data folder to the zenodo-downloaded data folder
-data_folder <- "~/Documents/github/data/sushie_results/real2"
-constraint_folder <- "~/Documents/github/data/sushie_results/Constraint/"
-metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+data_folder <- "~/Downloads/sushie_real_data_results/all_results/"
+metadata_folder <- "~/Downloads/sushie_real_data_results/metadata/"
+constraint_folder <- "~/Downloads/sushie_real_data_results/constraint_score/"
 validation_folder <- "~/Downloads/sushie_real_data_results/twas_validation/"
 
 rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))
@@ -339,10 +339,10 @@ ggplot(qq_twas2, aes(sample = -log(p.value))) +
 
 # ggsave("./plots/s28.png", width = p_width-1, height = p_height+3)
 
-df_eds <- read_tsv(glue("{constraint_folder}df_eds.tsv"))
-df_pli <- read_tsv(glue("{constraint_folder}df_pli_new.tsv"))
-df_rvis <- read_tsv(glue("{constraint_folder}df_rvis.tsv"))
-df_shet <- read_tsv(glue("{constraint_folder}df_shet_new.tsv"))
+df_eds <- read_tsv(glue("{constraint_folder}/df_eds.tsv"))
+df_pli <- read_tsv(glue("{constraint_folder}/df_pli_new.tsv"))
+df_rvis <- read_tsv(glue("{constraint_folder}/df_rvis.tsv"))
+df_shet <- read_tsv(glue("{constraint_folder}/df_shet_new.tsv"))
 
 df_scores <- df_eds %>% 
   mutate(score = "EDS",

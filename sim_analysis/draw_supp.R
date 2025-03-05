@@ -5,7 +5,7 @@ library(RColorBrewer)
 
 # to replicate our figures you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Documents/github/data/sushie_results/sim3"
+sim_data_path <- "~/Downloads/sushie_sim_data_results"
 
 ffont <- "sans"
 fontsize <- 9

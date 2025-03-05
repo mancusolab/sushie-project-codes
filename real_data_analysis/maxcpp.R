@@ -8,8 +8,8 @@ source("./utils.R")
 
 
 # zenodo folder
-ldsc_annotation_folder <- "~/Downloads/sushie_real_data_results/ldsc_annotation"
-ldsc_output_folder <- "~/Downloads/sushie_real_data_results/ldsc_output"
+ldsc_annotation_folder <- "~/Downloads/sushie_real_data_results/ldsc_annotation/"
+ldsc_output_folder <- "~/Downloads/sushie_real_data_results/ldsc_output/"
 
 traits <- c("EA_BAS", "EA_LYM", "EA_MON",
   "EA_WBC", "EA_NEU", "EA_EOS")

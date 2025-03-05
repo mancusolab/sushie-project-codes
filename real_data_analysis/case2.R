@@ -7,7 +7,7 @@ library(org.Hs.eg.db)
 library(RColorBrewer)
 
 # data folder
-case_data_folder <- "{case_data_folder}"
+case_data_folder <- "~/Downloads/sushie_real_data_results/case_study/"
 
 # case study URGCP
 target_gene <- "ENSG00000203875_SNHG5"

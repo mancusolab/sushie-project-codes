@@ -6,7 +6,7 @@ load("./data/df_2pop.RData")
 
 # to replicate our analysis you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Documents/github/data/sushie_results/sim3"
+sim_data_path <- "~/Downloads/sushie_sim_data_results"
 
 # gene-level LD 
 tmp_df_gene_ld <- read_tsv(glue("{sim_data_path}/sim_gene_ld.tsv.gz"))
