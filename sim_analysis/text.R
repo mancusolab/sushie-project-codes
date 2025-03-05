@@ -55,6 +55,39 @@ cp_res %>%
     p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
 
+# finish inference
+sushie_sens_pop2 <- read_tsv(glue("{sim_data_path}/sushie_2pop_sens.tsv.gz"))
+mesusie_sens_pop2 <- read_tsv(glue("{sim_data_path}/mesusie_in_2pop_sens.tsv.gz"))
+xmap_sens_pop2 <- read_tsv(glue("{sim_data_path}/xmap_in_2pop_sens.tsv.gz"))
+xmap_ind_sens_pop2 <- read_tsv(glue("{sim_data_path}/xmap_ind_2pop_sens.tsv.gz"))
+susiex_sens_pop2 <- read_tsv(glue("{sim_data_path}/susiex_in_2pop_sens.tsv.gz"))
+
+df_sens <- sushie_sens_pop2 %>%
+  pivot_longer(cols = c(sushie:susie)) %>%
+  select(name, value, sim, locus) %>%
+  bind_rows(mesusie_sens_pop2 %>%
+      mutate(name = "mesusie") %>%
+      rename(value = mesusie),
+    xmap_sens_pop2 %>%
+      mutate(name = "xmap") %>%
+      rename(value = xmap),
+    xmap_ind_sens_pop2 %>%
+      mutate(name = "xmap_ind") %>%
+      rename(value = xmap),
+    susiex_sens_pop2 %>%
+      rename(value = sens,
+        name = method)
+  ) %>%
+  group_by(name) %>%
+  summarize(mvalue = mean(value),
+    se = sd(value)/sqrt(n())) %>%
+  filter(name %in% c("sushie", "mesusie", "xmap", "xmap_ind", "susiex")) %>%
+  mutate(name = factor(name,
+    levels = c("sushie", "mesusie", "xmap", "xmap_ind", "susiex"),
+    labels = c("SuShiE", "MESuSiE", "XMAP", "XMAP-IND", "SuSiEx"))) %>%
+  arrange(name)
+(0.257 + 0.265)/2
+# write_tsv(df_sens, "./manuscript_plots/s2.tsv")
 
 # 2 pop general data
 load("./data/df_2pop.RData")
@@ -126,7 +159,7 @@ cp_res %>%
 
 cp_res %>%
   filter(type == "CS") %>%
-  filter(grepl("xmap", term)) %>%
+  filter(grepl("XMAP", term)) %>%
   mutate(weight = 1/(se^2)) %>%
   summarize(weighted_mean = sum(estimate * weight) / sum(weight),
     weighted_se = sqrt(1/sum(weight)),
@@ -134,20 +167,45 @@ cp_res %>%
 
 xmap_only_case <- df_tmp %>%
   filter(type == "CS") %>%
-  filter(name %in% c("sushie", "xmap")) %>%
+  filter(name %in% c("SuShiE", "XMAP")) %>%
   pivot_wider(names_from = name, values_from = value) %>%
-  filter(!is.na(xmap)) %>%
-  pivot_longer(cols = c(sushie:xmap))
+  filter(!is.na(XMAP)) %>%
+  pivot_longer(cols = c(SuShiE:XMAP))
 
 xmap_ind_only_case <- df_tmp %>%
   filter(type == "CS") %>%
-  filter(name %in% c("sushie", "xmap_ind")) %>%
+  filter(name %in% c("SuShiE", "XMAP-IND")) %>%
   pivot_wider(names_from = name, values_from = value) %>%
-  filter(!is.na(xmap_ind)) %>%
-  pivot_longer(cols = c(sushie:xmap_ind))
+  filter(!is.na(`XMAP-IND`)) %>%
+  pivot_longer(cols = c(SuShiE:`XMAP-IND`))
 
-bind_rows(comp_methods(xmap_only_case, "xmap", "CS"),
-  comp_methods(xmap_ind_only_case, "xmap_ind", "CS")) %>%
+df_tmp %>%
+  filter(type == "CS") %>%
+  filter(name %in% "SuShiE") %>%
+  filter(!is.na(value)) %>%
+  distinct(sim, locus, CSIndex) %>%
+  left_join(df_tmp %>%
+      filter(type == "CS") %>%
+      filter(name %in% c("SuShiE", "XMAP")) %>%
+      pivot_wider(names_from = name, values_from = value) %>%
+      filter(!is.na(XMAP)) %>%
+      pivot_longer(cols = c(SuShiE:XMAP)) %>%
+      distinct(sim, locus, CSIndex) %>%
+      mutate(XMAP = 1)) %>%
+  left_join(
+    df_tmp %>%
+      filter(type == "CS") %>%
+      filter(name %in% c("SuShiE", "XMAP-IND")) %>%
+      pivot_wider(names_from = name, values_from = value) %>%
+      filter(!is.na(`XMAP-IND`)) %>%
+      pivot_longer(cols = c(SuShiE:`XMAP-IND`)) %>%
+      distinct(sim, locus, CSIndex) %>%
+      mutate(`XMAP-IND` = 1)) %>%
+  ungroup() %>%
+  summarize(prop = sum(!(is.na(XMAP) & is.na(`XMAP-IND`)))/n())
+
+bind_rows(comp_methods(xmap_only_case, "XMAP", "CS"),
+  comp_methods(xmap_ind_only_case, "XMAP-IND", "CS")) %>%
   mutate(weight = 1/(se^2)) %>%
   summarize(weighted_mean = sum(estimate * weight) / sum(weight),
     weighted_se = sqrt(1/sum(weight)),
@@ -207,10 +265,10 @@ df_tmp <- df_2pop %>%
       h2g %in% c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2") & 
       rho %in% c("0.01", "0.4", "0.8", "0.99")) %>%
   mutate(h2g = case_when(
-      h2g == "0.01:0.01" ~ 0.01,
-      h2g == "0.05:0.05" ~ 0.05,
-      h2g == "0.1:0.1" ~ 0.1,
-      h2g == "0.2:0.2" ~ 0.2)) %>%
+    h2g == "0.01:0.01" ~ 0.01,
+    h2g == "0.05:0.05" ~ 0.05,
+    h2g == "0.1:0.1" ~ 0.1,
+    h2g == "0.2:0.2" ~ 0.2)) %>%
   select(-L3, -L2, -N) 
 
 cp_res <- tibble()
@@ -337,28 +395,6 @@ cp_res %>%
     se = sqrt(1/sum(weight)),
     p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
-# different LD patterns
-df_gene_meta <- read_tsv("~/Documents/github/sushie-data-codes/sim_data_prepare/sim_gene_ldsc.tsv") %>%
-  select(locus = `0`, var_p, n_snps) %>%
-  mutate(ld_group = -log(var_p),
-    snp_group = ntile(n_snps, 3))
-
-df_tmp <- df_2pop %>%
-  filter(name %in% "SuShiE") %>%
-  filter(N %in% c("400:400") &
-      L1 == L2 & L3 == 0 & L1 ==2 &
-      h2g %in%  "0.05:0.05" & 
-      rho %in%  "0.8") %>%
-  mutate(N = case_when(
-    N == "200:200" ~ 200,
-    N == "400:400" ~ 400,
-    N == "600:600" ~ 600,
-    N == "800:800" ~ 800)) %>%
-  left_join(df_gene_meta, by = "locus")
-
-tidy(lm(value ~ ld_group + CSIndex, filter(df_tmp, type == "PIP")))
-tidy(lm(value ~ ld_group + CSIndex, filter(df_tmp, type == "CS")))
-tidy(lm(value ~ ld_group + CSIndex, filter(df_tmp, type == "Calibration")))
 
 # additional AS QTL
 df_tmp <- df_2pop %>%
@@ -546,11 +582,11 @@ df_tmp <- df_r2twas %>%
 cp_res <- tibble()
 for (other_method in c(other_methods[!other_methods %in% "SuSiEx"],
   "Elastic Net", "LASSO", "gBLUP")) {
-    cp_res <- cp_res %>%
-      bind_rows(
-        comp_twas(df_tmp, other_method) %>%
-          mutate(mval = mean(estimate))
-      )
+  cp_res <- cp_res %>%
+    bind_rows(
+      comp_twas(df_tmp, other_method) %>%
+        mutate(mval = mean(estimate))
+    )
 }
 
 cp_res %>%
@@ -580,42 +616,6 @@ cp_res %>%
     se = sqrt(1/sum(weight)),
     p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
-##########################################################################################
-
-
-tmp_r2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/sim_pred_r2.tsv.gz")
-
-cp_r2 <- tmp_r2 %>%
-  filter(h2g == "0.05:0.05" &
-      ngwas == 2e5 & h2ge == 0.3/2000) %>%
-  filter(method %in% c("sushie", "indep", "meta", "susie",
-    "mesusie.in",  "xmap.in",  "xmap.ind")) %>%
-  pivot_longer(cols=c(ancestry1_weight1, ancestry2_weight2)) %>%
-  filter(!is.na(value)) %>%
-  mutate(method = factor(method,
-    levels = c("sushie", "indep", "meta", "susie",
-      "mesusie.in",  "xmap.in",  "xmap.ind"),
-    labels = c("SuShiE", "SuShiE-Indep",
-      "Meta-SuSiE", "SuSiE", "MESuSiE", 
-      "XMAP", "XMAP-IND")))
-
-tidy(lm(value ~ method + name + N, cp_r2)) %>%
-  mutate(p.value = p.value/2)
-
-
-tmp_twas <- read_tsv("~/Documents/github/data/sushie_results/sim2/sim_pred_twas.tsv.gz")
-cp_twas <- tmp_twas %>%
-  filter(N == "400:400" & h2g == "0.05:0.05" & h2ge == 0.3/2000) %>%
-  pivot_longer(cols=c(sushie, indep, meta, susie, enet, lasso, ridge)) %>%
-  mutate(value = value**2) %>%
-  filter(name %in% c("sushie", "susie", "lasso", "enet", "ridge")) %>%
-  mutate(name = factor(name, levels = c("sushie", "susie", "lasso", "enet", "ridge"),
-    labels = c("SuShiE", "SuSiE", "LASSO", "Elastic Net", "gBLUP")),
-    ngwas = factor(ngwas,  levels = c(100000, 200000, 300000),
-      labels = c("100k", "200k", "300k")))
-
-tidy(lm(value ~ name+ ngwas + factor(ancestry), cp_twas)) %>%
-  mutate(p.value = p.value/2)
 
 load("./data/df_sushie_comp.RData")
 

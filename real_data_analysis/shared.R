@@ -4,18 +4,24 @@ library(ggpubr)
 
 source("./utils.R")
 
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz") 
+# change the data folder to the zenodo-downloaded data folder
+data_folder <- "~/Documents/github/data/sushie_results/real2"
+metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+constraint_folder <- "~/Documents/github/data/sushie_results/Constraint/"
 
-proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz") 
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
+rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))
 
-rnaseq_her <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_her.tsv.gz")
+proteins_cov <- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz"))
+
+genoa_cov <- read_tsv(glue("{data_folder}/genoa_normal.sushie_cs.tsv.gz"))
+
+rnaseq_her <- read_tsv(glue("{data_folder}/rnaseq_her.tsv.gz"))
 
 proteins_her <-
-  read_tsv("~/Documents/github/data/sushie_results/real2/proteins_her.tsv.gz")
+  read_tsv(glue("{data_folder}/proteins_her.tsv.gz"))
 
-genoa_her <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_her.tsv.gz")
+genoa_her <- read_tsv(glue("{data_folder}/genoa_her.tsv.gz"))
 
 # get legend
 rnaseq_qtl <- rnaseq_cov %>%
@@ -462,12 +468,12 @@ tidy(cor.test(
 
 # correlation
 rnaseq_corr <-
-  read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_corr.tsv.gz")
+  read_tsv(glue("{data_folder}/rnaseq_corr.tsv.gz"))
 
 proteins_corr <-
-  read_tsv("~/Documents/github/data/sushie_results/real2/proteins_corr.tsv.gz")
+  read_tsv(glue("{data_folder}/proteins_corr.tsv.gz"))
 
-genoa_corr <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_corr.tsv.gz")
+genoa_corr <- read_tsv(glue("{data_folder}/genoa_corr.tsv.gz"))
 
 df_corr <- prepare_corr(rnaseq_corr %>%
     filter(trait %in% rnaseq_genes$trait), rnaseq_her, 3) %>%
@@ -696,9 +702,9 @@ rnaseq_cov %>%
 # tmp_weight <- tmp_weight[sample(1:nrow(tmp_weight), 100, replace = FALSE),]
 # write_tsv(tmp_weight , "~/Downloads/genoa_weights.tsv", col_names = FALSE)
 
-rnaseq_w <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_weights.tsv.gz")
-proteins_w <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_weights.tsv.gz")
-genoa_w <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_weights.tsv.gz")
+rnaseq_w <- read_tsv(glue("{data_folder}/rnaseq_weights.tsv.gz"))
+proteins_w <- read_tsv(glue("{data_folder}/proteins_weights.tsv.gz"))
+genoa_w <- read_tsv(glue("{data_folder}/genoa_weights.tsv.gz"))
 
 p1 <- ggplot(rnaseq_w, aes(x = ancestry1_sushie_weight,
   y = ancestry2_sushie_weight)) +
@@ -863,10 +869,10 @@ ggplot(df_dens, aes(x = value, color = study, fill = study)) +
 
 # ggsave("./plots/s21.png", , width = p_width+1, height = p_height+5)
 
-df_eds <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_eds.tsv")
-df_pli <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_pli_new.tsv")
-df_rvis <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_rvis.tsv")
-df_shet <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_shet_new.tsv")
+df_eds <- read_tsv(glue("{constraint_folder}/df_eds.tsv"))
+df_pli <- read_tsv(glue("{constraint_folder}/df_pli_new.tsv"))
+df_rvis <- read_tsv(glue("{constraint_folder}/df_rvis.tsv"))
+df_shet <- read_tsv(glue("{constraint_folder}/df_shet_new.tsv"))
 
 df_scores <- df_eds %>% 
   mutate(score = "EDS") %>%
@@ -916,7 +922,7 @@ df_qtl <- bind_rows(rnaseq_qtl, proteins_qtl, genoa_qtl) %>%
 
 # constraint analysis preparation
 # fst info
-rnaseq_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_fst.all_snp.tsv.gz") %>%
+rnaseq_fst <- read_tsv(glue("{data_folder}/rnaseq_fst.all_snp.tsv.gz")) %>%
   mutate(pop1 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "EUR", `#POP1`),
     pop2 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "AFR", POP2),
     type = ifelse(pop1 == "EUR" & pop2 == "AFR", "ancestry1_ancestry2_est_corr",
@@ -928,7 +934,7 @@ rnaseq_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_fst.
   mutate(type = gsub("_est_corr", "", type))
 
 # proteins
-proteins_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_fst.all_snp.tsv.gz") %>%
+proteins_fst <- read_tsv(glue("{data_folder}/proteins_fst.all_snp.tsv.gz")) %>%
   mutate(pop1 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "EUR", `#POP1`),
     pop2 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "AFR", POP2),
     type = ifelse(pop1 == "EUR" & pop2 == "AFR", "ancestry1_ancestry2_est_corr",
@@ -940,7 +946,7 @@ proteins_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_
   mutate(type = gsub("_est_corr", "", type))
 
 # genoa
-genoa_fst <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_fst.all_snp.tsv.gz") %>%
+genoa_fst <- read_tsv(glue("{data_folder}/genoa_fst.all_snp.tsv.gz")) %>%
   mutate(pop1 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "EUR", `#POP1`),
     pop2 = ifelse(`#POP1` == "AFR" & POP2 == "EUR", "AFR", POP2),
     type = "ancestry1_ancestry2_est_corr",
@@ -1115,9 +1121,9 @@ for (n_time in 1:100) {
         mutate(times = n_time))
 }
 
-# write_tsv(btsp_res, "~/Documents/github/data/sushie_results/real2/btsp_res.tsv")
+# write_tsv(btsp_res, "{data_folder}/btsp_res.tsv")
 
-btsp_res <- read_tsv("~/Documents/github/data/sushie_results/real2/btsp_res.tsv")
+btsp_res <- read_tsv(glue("{data_folder}/btsp_res.tsv"))
 btsp_comp <- normal_comp %>%
   left_join(
     btsp_res %>%
@@ -1219,13 +1225,13 @@ all_qtl <- bind_rows(rnaseq_qtl, proteins_qtl, genoa_qtl)
 
 
 # distance info
-rnaseq_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/mesa_rnaseq_gene_list_noMHC.tsv", col_names = FALSE) %>%
+rnaseq_ref <- read_tsv(glue("{metadata_folder}/mesa_rnaseq_gene_list_noMHC.tsv"), col_names = FALSE) %>%
   select(trait = X12, TSS = X6)
 
-proteins_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/mesa_proteins_gene_list_noMHC.tsv", col_names = FALSE) %>%
+proteins_ref <- read_tsv(glue("{metadata_folder}/mesa_proteins_gene_list_noMHC.tsv"), col_names = FALSE) %>%
   select(trait = X15, TSS = X6)
 
-genoa_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/genoa_sushie_gene_list_noMHC.tsv", col_names = FALSE) %>%
+genoa_ref <- read_tsv(glue("{metadata_folder}/genoa_sushie_gene_list_noMHC.tsv"), col_names = FALSE) %>%
   select(trait = X2, TSS = X6)
 
 rnaseq_dist <- rnaseq_cov %>%
@@ -1258,7 +1264,7 @@ genoa_dist <- genoa_cov %>%
 all_dist <- bind_rows(rnaseq_dist, proteins_dist, genoa_dist)
 
 # enrich score
-rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_enrich_all.tsv.gz") %>%
+rnaseq_enrich <- read_tsv(glue("{data_folder}/rnaseq_enrich_all.tsv.gz")) %>%
   filter(trait %in% filter(rnaseq_cov, !is.na(snp))$trait)%>%
   filter(method == "pip_cov") %>%
   filter(converged == 1 & reg == 0) %>%
@@ -1266,7 +1272,7 @@ rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_e
   mutate(study = "mesa.mrna") %>%
   select(study, trait, anno, est)
 
-proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_enrich_all.tsv.gz") %>%
+proteins_enrich <- read_tsv(glue("{data_folder}/proteins_enrich_all.tsv.gz")) %>%
   filter(method == "pip_cov") %>%
   filter(trait %in% filter(proteins_cov, !is.na(snp))$trait)%>%
   filter(converged == 1 & reg == 0) %>%
@@ -1274,7 +1280,7 @@ proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/protei
   mutate(study = "mesa.proteins") %>%
   select(study, trait, anno, est)
 
-genoa_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_enrich_all.tsv.gz") %>%
+genoa_enrich <- read_tsv(glue("{data_folder}/genoa_enrich_all.tsv.gz")) %>%
   filter(trait %in% filter(genoa_cov, !is.na(snp))$trait)%>%
   filter(method == "pip_cov") %>%
   filter(converged == 1 & reg == 0) %>%
@@ -1340,9 +1346,9 @@ for (n_time in 1:100) {
     bind_rows(btsp_func2(df_all) %>%
         mutate(times = n_time))
 }
-# write_tsv(btsp_res2, "~/Documents/github/data/sushie_results/real2/btsp_res2.tsv")
+# write_tsv(btsp_res2, "{data_folder}/btsp_res2.tsv")
 
-btsp_res2 <- read_tsv("~/Documents/github/data/sushie_results/real2/btsp_res2.tsv")
+btsp_res2 <- read_tsv(glue("{data_folder}/btsp_res2.tsv"))
 
 df_text <- df_all %>%
   nest_by(type, score) %>%
@@ -1434,7 +1440,6 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     axis.text=element_text(size = 5, face="bold")) 
 
 # ggsave("./plots/s23.png", width = p_width/1.75, height = p_height+1)
-
 
 df_n_qtl <- df_all %>%
   filter(grepl("Enrich", type)) %>%

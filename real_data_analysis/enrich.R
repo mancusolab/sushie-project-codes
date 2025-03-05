@@ -11,12 +11,16 @@ title_size <- 9
 legend_size <- 8
 bar_width <- 0.5
 
+# change the data folder to the zenodo-downloaded data folder
+data_folder <- "~/Documents/github/data/sushie_results/real2"
+metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+
 # rnaseq
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz")
+rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))
 
-proteins_cov<- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")
+proteins_cov<- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz"))
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
+genoa_cov <- read_tsv(glue("{data_folder}/genoa_normal.sushie_cs.tsv.gz"))
 
 
 # qtl
@@ -96,7 +100,7 @@ mp1 <- ggplot(df_qtl, aes(x=new_n, y=perc_val, fill = study)) +
 
 leg <- get_legend(mp1, position = "bottom")
 
-rnaseq_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_tss.tsv.gz") %>%
+rnaseq_tss <- read_tsv(glue("{data_folder}/rnaseq_tss.tsv.gz")) %>%
   group_by(Type) %>%
   mutate(n_gene = length(unique(gene))) %>%
   group_by(bins, Type) %>%
@@ -105,7 +109,7 @@ rnaseq_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_tss.
     n_gene = mean(n_gene)) %>%
   mutate(study = "TOPMed-MESA mRNA")
 
-proteins_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_tss.tsv.gz") %>%
+proteins_tss <- read_tsv(glue("{data_folder}/proteins_tss.tsv.gz")) %>%
   group_by(Type) %>%
   mutate(n_gene = length(unique(gene))) %>%
   group_by(bins, Type) %>%
@@ -114,7 +118,7 @@ proteins_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_
     n_gene = mean(n_gene)) %>%
   mutate(study = "TOPMed-MESA Protein")
 
-genoa_tss <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_tss.tsv.gz") %>%
+genoa_tss <- read_tsv(glue("{data_folder}/genoa_tss.tsv.gz")) %>%
   group_by(Type) %>%
   mutate(n_gene = length(unique(gene))) %>%
   group_by(bins, Type) %>%
@@ -145,13 +149,13 @@ mp2 <- ggplot(df_pip, aes(x = bins, y = avg_signal, color=study)) +
   main_theme_p1()
 
 # enrich
-rnaseq_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_enrich_all.tsv.gz") %>%
+rnaseq_enrich <- read_tsv(glue("{data_folder}/rnaseq_enrich_all.tsv.gz")) %>%
   filter(!anno %in% c("tss_all", "tss_protein"))
 
-proteins_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_enrich_all.tsv.gz") %>%
+proteins_enrich <- read_tsv(glue("{data_folder}/proteins_enrich_all.tsv.gz")) %>%
   filter(!anno %in% c("tss_all", "tss_protein"))
 
-genoa_enrich <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_enrich_all.tsv.gz") %>%
+genoa_enrich <- read_tsv(glue("{data_folder}/genoa_enrich_all.tsv.gz")) %>%
   filter(!anno %in% c("tss_all", "tss_protein"))
 
 enrich_list <- unique(rnaseq_enrich$anno)
@@ -230,7 +234,6 @@ mp3 <- ggplot(df_anno,
   scale_color_manual(values = main_study_color) +
   geom_hline(yintercept=0, linetype="dashed") +
   main_theme_p1()
-
 
 enrich_res <- rnaseq_enrich %>%
   filter(anno %in% c(atac_list, "snATAC-seq-frozen-peaks")) %>%
@@ -478,35 +481,35 @@ ggarrange(m1, m2, nrow=1, widths=c(1,2), align = "h", common.legend = TRUE,
 
 # creating tables
 
-rnaseq_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_indep.sushie_cs.tsv.gz")
+rnaseq_indep <- read_tsv(glue("{data_folder}/rnaseq_indep.sushie_cs.tsv.gz"))
 
-rnaseq_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.meta_cs.tsv.gz")
+rnaseq_meta <- read_tsv(glue("{data_folder}/rnaseq_normal.meta_cs.tsv.gz"))
 
-rnaseq_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.mega_cs.tsv.gz")
+rnaseq_mega <- read_tsv(glue("{data_folder}/rnaseq_normal.mega_cs.tsv.gz"))
 
-rnaseq_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_susiex_cs.tsv.gz")
+rnaseq_susiex <- read_tsv(glue("{data_folder}/rnaseq_susiex_cs.tsv.gz"))
 
-rnaseq_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_mesusie_cs.tsv.gz")
+rnaseq_mesusie <- read_tsv(glue("{data_folder}/rnaseq_mesusie_cs.tsv.gz"))
 
-proteins_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_indep.sushie_cs.tsv.gz")
+proteins_indep <- read_tsv(glue("{data_folder}/proteins_indep.sushie_cs.tsv.gz"))
 
-proteins_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.meta_cs.tsv.gz")
+proteins_meta <- read_tsv(glue("{data_folder}/proteins_normal.meta_cs.tsv.gz"))
 
-proteins_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.mega_cs.tsv.gz")
+proteins_mega <- read_tsv(glue("{data_folder}/proteins_normal.mega_cs.tsv.gz"))
 
-proteins_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_susiex_cs.tsv.gz")
+proteins_susiex <- read_tsv(glue("{data_folder}/proteins_susiex_cs.tsv.gz"))
 
-proteins_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_mesusie_cs.tsv.gz")
+proteins_mesusie <- read_tsv(glue("{data_folder}/proteins_mesusie_cs.tsv.gz"))
 
-genoa_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_indep.sushie_cs.tsv.gz")
+genoa_indep <- read_tsv(glue("{data_folder}/genoa_indep.sushie_cs.tsv.gz"))
 
-genoa_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.meta_cs.tsv.gz")
+genoa_meta <- read_tsv(glue("{data_folder}/genoa_normal.meta_cs.tsv.gz"))
 
-genoa_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.mega_cs.tsv.gz")
+genoa_mega <- read_tsv(glue("{data_folder}/genoa_normal.mega_cs.tsv.gz"))
 
-genoa_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_susiex_cs.tsv.gz")
+genoa_susiex <- read_tsv(glue("{data_folder}/genoa_susiex_cs.tsv.gz"))
 
-genoa_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_mesusie_cs.tsv.gz")
+genoa_mesusie <- read_tsv(glue("{data_folder}/genoa_mesusie_cs.tsv.gz"))
 
 
 meta_anno <- tibble(Study = "LDSC", Annotation = ldsc_list) %>%
@@ -667,7 +670,6 @@ comp_enrich <- function(df, method_name) {
   return(tmp_df)
 }
 
-
 enrich_all <- tibble()
 for (method in c("pip_indep", "pip_meta", "susiex_cs", "mesusie_cs",
   "pip_mega")) {
@@ -685,7 +687,6 @@ for (method in c("pip_indep", "pip_meta", "susiex_cs", "mesusie_cs",
     )
 }
 
-
 df_enrich_comp <- enrich_all %>%
   mutate(dataset = factor(dataset,levels = c("across",
     "TOPMed-MESA mRNA", "TOPMed-MESA Protein", "GENOA mRNA")),
@@ -700,7 +701,6 @@ df_enrich_comp <- enrich_all %>%
   arrange(dataset, type)
 
 # write_tsv(df_enrich_comp %>% select(-dataset, -type), "./tables/s6.tsv", col_names=FALSE)
-
 
 # single effect alpha
 # aggregate for manuscript across studies
@@ -811,13 +811,13 @@ table_enrich <- table_enrich_all %>%
 
 # write_tsv(table_enrich, "./tables/s7.tsv", col_names=FALSE)
 
-rnaseq_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/mesa_rnaseq_gene_list_noMHC.tsv", col_names = FALSE) %>%
+rnaseq_ref <- read_tsv(glue("{metadata_folder}/mesa_rnaseq_gene_list_noMHC.tsv"), col_names = FALSE) %>%
   select(trait = X12, TSS = X6)
 
-proteins_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/mesa_proteins_gene_list_noMHC.tsv", col_names = FALSE) %>%
+proteins_ref <- read_tsv(glue("{metadata_folder}/mesa_proteins_gene_list_noMHC.tsv"), col_names = FALSE) %>%
   select(trait = X15, TSS = X6)
 
-genoa_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/genoa_sushie_gene_list_noMHC.tsv", col_names = FALSE) %>%
+genoa_ref <- read_tsv(glue("{metadata_folder}/genoa_sushie_gene_list_noMHC.tsv"), col_names = FALSE) %>%
   select(trait = X2, TSS = X6)
 
 rnaseq_dist <- rnaseq_cov %>%

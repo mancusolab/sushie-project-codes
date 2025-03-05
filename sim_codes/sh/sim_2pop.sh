@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=03:00:00
+#SBATCH --time=06:00:00
 #SBATCH --mem=4Gb
 #SBATCH --array=1-1300
 #SBATCH --mail-type=all
@@ -17,6 +17,7 @@ fi
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
+module load legacy/CentOS7
 module load gcc/8.3.0
 module load openblas/0.3.8
 module load r/4.1.0
@@ -53,6 +54,7 @@ do
   mkdir -p $TMPDIR
 
   OUT=/scratch1/zeyunlu/sushie_sim_2pop
+  OUT2=/scratch1/zeyunlu/sushie_sim_2pop_2
   tmp_output=${TMPDIR}/other
   eur1=$DATAF/new/EUR_1000G/${gene}_${chr}_geno
   afr1=$DATAF/new/AFR_1000G/${gene}_${chr}_geno
@@ -104,7 +106,7 @@ do
     --pval_thresh=1 \
     --max_iter=500
 
-  Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/process_susiex_2pop.R \
+  Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/run_susiex.R \
     ${TMPDIR} ${row} ${locus} ${tmp_output}.causal.sim${row}.locus${locus}.tsv ${OUT}/susiex/susiex $L2
 
   # prepare data for xmap and mesusie
@@ -119,18 +121,24 @@ do
     ${tmp_output}.causal.sim${row}.locus${locus}.tsv \
     $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata
 
-   run xmap and mesusie
+  # run xmap and mesusie
   Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/run_mesusie.R \
     ${tmp_output}.in.sim${row}.locus${locus}.rdata \
-    $OUT/mesusie/mesusie.in.sim${row}.locus${locus}
-#
+    $OUT/mesusie/mesusie.in.sim${row}.locus${locus} \
+    ${tmp_output}.mesusie.in.sim${row}.locus${locus}
+
   Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/run_xmap.R \
     ${tmp_output}.in.sim${row}.locus${locus}.rdata \
-    $OUT/xmap/xmap.in.sim${row}.locus${locus}
+    $OUT/xmap/xmap.in.sim${row}.locus${locus} \
+    ${tmp_output}.xmap.in.sim${row}.locus${locus}
 
   Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/run_xmap2.R \
     ${tmp_output}.in.sim${row}.locus${locus}.rdata \
-    $OUT/xmap/xmap.ind.sim${row}.locus${locus}
+    $OUT/xmap/xmap.ind.sim${row}.locus${locus} \
+    ${tmp_output}.xmap.ind.sim${row}.locus${locus}
+
+    Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/aggregate.R \
+    ${TMPDIR} ${row} ${locus} ${tmp_output}.causal.sim${row}.locus${locus}.tsv ${OUT2} $L2
 
   rm -rf $TMPDIR
 done

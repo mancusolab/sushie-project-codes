@@ -4,6 +4,7 @@ args <- commandArgs(trailingOnly = TRUE)
 
 f_rdata <- args[1]
 out <- args[2]
+out2 <- args[3]
 load(f_rdata)
 
 xmap_res <- tryCatch({
@@ -99,3 +100,47 @@ df_rho <- df_rho %>%
   mutate(CSIndex = row_number())
 
 write_tsv(df_rho, glue("{out}.rho.tsv"))
+
+
+# additional
+
+pip1 <- XMAP::get_pip(xmap_res$gamma)
+df_pip <- tibble(SNPIndex_1based = 1:length(pip1), xmap = pip1)
+df_pip$sim <- sim
+df_pip$locus <- locus
+write_tsv(df_pip, glue("{out2}.pip.tsv"))
+
+if (length(cs1$cs) != 0 ) {
+  df_cs <- tibble()
+  for (jdx in 1:length(cs1$cs)) {
+    df_cs <- df_cs %>%
+      bind_rows(
+        tibble(CSIndex = jdx, 
+          SNPIndex_1based = cs1$cs[[jdx]]
+        )
+      )
+  }
+  
+  df_cs$sim <- sim
+  df_cs$locus <- locus
+  
+  write_tsv(df_cs, glue("{out2}.cs.tsv"))
+}
+
+df_rho <- tibble("locus" = locus, "sim" = sim, CSIndex = 1:L2)
+df_rho$est_rho <- NA
+df_rho$frob <- NA
+for (idx in 1:L2) {
+  tmp_matrix <- xmap_res$Sigma[,,idx]
+  tmp_rho <- tmp_matrix[1,2] / (sqrt(tmp_matrix[1,1]) * sqrt(tmp_matrix[2,2]))
+  tmp_frob <- norm(tmp_matrix, type = "F")
+  df_rho$est_rho[idx] <- tmp_rho
+  df_rho$frob[idx] <- tmp_frob
+}
+
+df_rho <- df_rho %>%
+  arrange(desc(frob)) %>%
+  mutate(CSIndex = row_number())
+
+write_tsv(df_rho, glue("{out2}.rho.tsv"))
+

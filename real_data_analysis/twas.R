@@ -3,11 +3,17 @@ library(ggpubr)
 library(broom)
 source("./utils.R")
 
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz")
+# change the data folder to the zenodo-downloaded data folder
+data_folder <- "~/Documents/github/data/sushie_results/real2"
+constraint_folder <- "~/Documents/github/data/sushie_results/Constraint/"
+metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+validation_folder <- "~/Downloads/sushie_real_data_results/twas_validation/"
 
-proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")
+rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
+proteins_cov <- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz"))
+
+genoa_cov <- read_tsv(glue("{data_folder}/genoa_normal.sushie_cs.tsv.gz"))
 
 method_colors <-c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
   "Meta-SuSiE" = "#7570b3", "SuSiE" = "#e7298a",
@@ -19,21 +25,21 @@ twas_colors <- c(method_colors,
 # lfs <- list.files("~/Downloads/new_res/", full.names = TRUE)
 # 
 # df_twas <- lfs %>% map_df(read_tsv, col_type = cols())
-# write_tsv(df_twas, "~/Documents/github/data/sushie_results/real2/sushie_twas.tsv.gz")
+# write_tsv(df_twas, "{data_folder}/sushie_twas.tsv.gz")
 
-rnaseq_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz") %>%
+rnaseq_cov_simple <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.mrna") %>%
   distinct()
 
-proteins_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")%>%
+proteins_cov_simple <- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.proteins") %>%
   distinct()
 
-genoa_cov_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz") %>%
+genoa_cov_simple <- read_tsv(glue("{data_folder}/genoa_normal.sushie_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "genoa.mrna") %>%
@@ -46,19 +52,19 @@ cov_genes_list <- bind_rows(rnaseq_cov_simple,
 nrow(rnaseq_cov_simple) + nrow(genoa_cov_simple)
 nrow(proteins_cov_simple)
 
-rnaseq_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.mega_cs.tsv.gz") %>%
+rnaseq_mega_simple <- read_tsv(glue("{data_folder}/rnaseq_normal.mega_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.mrna") %>%
   distinct()
 
-proteins_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.mega_cs.tsv.gz")%>%
+proteins_mega_simple <- read_tsv(glue("{data_folder}/proteins_normal.mega_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "mesa.proteins") %>%
   distinct()
 
-genoa_mega_simple <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.mega_cs.tsv.gz") %>%
+genoa_mega_simple <- read_tsv(glue("{data_folder}/genoa_normal.mega_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
   select(gene = trait) %>%
   mutate(study = "genoa.mrna") %>%
@@ -69,21 +75,21 @@ mega_genes_list <- bind_rows(rnaseq_mega_simple,
   genoa_mega_simple)
 
 mesusie_genes_list <- bind_rows(
-  read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_mesusie_cs.tsv.gz") %>%
+  read_tsv(glue("{data_folder}/rnaseq_mesusie_cs.tsv.gz")) %>%
     distinct(trait) %>%
     rename(gene = trait) %>%
     mutate(study = "mesa.mrna"),
-  read_tsv("~/Documents/github/data/sushie_results/real2/proteins_mesusie_cs.tsv.gz") %>%
+  read_tsv(glue("{data_folder}/proteins_mesusie_cs.tsv.gz")) %>%
     distinct(trait) %>%
     rename(gene = trait) %>%
     mutate(study = "mesa.proteins"),
-  read_tsv("~/Documents/github/data/sushie_results/real2/genoa_mesusie_cs.tsv.gz") %>%
+  read_tsv(glue("{data_folder}/genoa_mesusie_cs.tsv.gz")) %>%
     distinct(trait) %>%
     rename(gene = trait) %>%
     mutate(study = "genoa.mrna")
 )
 
-df_twas <- read_tsv("~/Documents/github/data/sushie_results/real2/sushie_twas.tsv.gz")
+df_twas <- read_tsv(glue("{data_folder}/sushie_twas.tsv.gz"))
 
 wbc_traits <- c("WBC", "MON", "NEU", "EOS", "BAS", "LYM")
 
@@ -333,10 +339,10 @@ ggplot(qq_twas2, aes(sample = -log(p.value))) +
 
 # ggsave("./plots/s28.png", width = p_width-1, height = p_height+3)
 
-df_eds <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_eds.tsv")
-df_pli <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_pli_new.tsv")
-df_rvis <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_rvis.tsv")
-df_shet <- read_tsv("~/Documents/github/data/sushie_results/Constraint/df_shet_new.tsv")
+df_eds <- read_tsv(glue("{constraint_folder}df_eds.tsv"))
+df_pli <- read_tsv(glue("{constraint_folder}df_pli_new.tsv"))
+df_rvis <- read_tsv(glue("{constraint_folder}df_rvis.tsv"))
+df_shet <- read_tsv(glue("{constraint_folder}df_shet_new.tsv"))
 
 df_scores <- df_eds %>% 
   mutate(score = "EDS",
@@ -425,9 +431,9 @@ pnorm(abs((sum(df_asso$statistic[1:5]^2) - sum(df_asso$statistic[11:15]^2))/sqrt
 
 # validation
 # lu et al
-df_ref <- read_tsv("~/Documents/github/data/sushie_results/metadata/gencode.v34.gene.only.tsv.gz")
+df_ref <- read_tsv(glue("{metadata_folder}/gencode.v34.gene.only.tsv.gz"))
 
-load("~/Documents/github/MA-FOCUS-data-code/real-data/data/twas.RData")
+load(glue("{validation_folder}/lu/twas.RData"))
 
 lu_twas_sig <- twas_all %>%
   filter(PHEN %in% wbc_traits) %>%
@@ -448,26 +454,27 @@ lu_twas_sig %>%
 sig_thresh <- qnorm(0.05/23000, lower.tail = FALSE)
 
 # kachuri et al
-lfs <- list.files("~/Downloads/Results/", pattern="Result", full.names = TRUE)
+lfs <- list.files(glue("{validation_folder}/kachuri/"),
+  pattern="Result", full.names = TRUE)
 kachuri_twas_sig <- lfs %>% map_df(read_csv) %>%
   mutate(gene = gsub("\\..+", "", gene),
     pheno = "WBC") %>%
   filter(abs(zscore) > sig_thresh) %>%
   distinct(gene, pheno)
 
-mon_twas <- read_csv("~/Downloads/Results/MONO_AA_whole_blood.csv") %>%
+mon_twas <- read_csv(glue("{validation_folder}/kachuri/MONO_AA_whole_blood.csv")) %>%
   mutate(gene = gsub("\\..+", "", gene),
     pheno = "MON") %>%
   filter(abs(zscore) > sig_thresh) %>%
   select(gene, pheno)
 
-neu_twas <- read_csv("~/Downloads/Results/NEU_AA_whole_blood.csv") %>%
+neu_twas <- read_csv(glue("{validation_folder}/kachuri/NEU_AA_whole_blood.csv")) %>%
   mutate(gene = gsub("\\..+", "", gene),
     pheno = "NEU") %>%
   filter(abs(zscore) > sig_thresh) %>%
   select(gene, pheno)
 
-wbc_twas <- read_csv("~/Downloads/Results/WBC_AA_whole_blood.csv") %>%
+wbc_twas <- read_csv(glue("{validation_folder}/kachuri/WBC_AA_whole_blood.csv")) %>%
   mutate(gene = gsub("\\..+", "", gene),
     pheno = "WBC") %>%
   filter(abs(zscore) > sig_thresh) %>%
@@ -477,7 +484,7 @@ kachuri_twas_sig2 <- bind_rows(mon_twas, neu_twas, wbc_twas)
 
 # tapia et al 
 library(readxl)
-tapia_twas <- read_excel("~/Downloads/gepi22436-sup-0003-supptable2_twassignif.xlsx",sheet = 1, skip = 3)
+tapia_twas <- read_excel(glue("{validation_folder}/tapia/gepi22436-sup-0003-supptable2_twassignif.xlsx"), sheet = 1, skip = 3)
 
 # lymphocyte count
 # monocyte count
@@ -504,7 +511,7 @@ tapia_twas_sig %>%
 
 # rowland et al 
 
-rowland_twas <- read_excel("~/Downloads/supplemental_tables_ddac011.xlsx",sheet = 2) %>%
+rowland_twas <- read_excel(glue("{validation_folder}/rowland/supplemental_tables_ddac011.xlsx"),sheet = 2) %>%
   filter(marginal_significant == 1) %>%
   filter(pheno_class == "WBC")
 
@@ -534,7 +541,7 @@ rowland_twas_sig %>%
 
 # wen et al
 library(stringr)
-wen_twas_sig <- read_excel("~/Downloads/genes-12-01049-s001 (1)/Supplementary_Tables_finalSUB_R2.xlsx", sheet = 4, skip = 1) %>%
+wen_twas_sig <- read_excel(glue("{validation_folder}/wen/Supplementary_Tables_finalSUB_R2.xlsx"), sheet = 4, skip = 1) %>%
   mutate(gene = str_extract(ENSGID, "ENSG.+")) %>%
   select(gene, pheno = Phenotype) %>%
   filter(pheno %in% "WBC")

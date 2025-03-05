@@ -3,6 +3,10 @@ library(ggpubr)
 library(broom)
 library(RColorBrewer)
 
+# to replicate our figures you need to download the data from the zenodo link
+# and point it to simulation data paht
+sim_data_path <- "~/Documents/github/data/sushie_results/sim3"
+
 ffont <- "sans"
 fontsize <- 7
 legend_fontsize <- 7
@@ -90,17 +94,17 @@ small_p3 <- ggplot(tmp_p3,
   xlab("molQTL Sample Size") +
   theme_sim()
 
-sushie_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/sushie_2pop_rho.tsv.gz")
+sushie_rho <- read_tsv(glue("{sim_data_path}/sushie_2pop_rho.tsv.gz"))
 
-xmap_in_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_in_2pop_rho.tsv.gz")
+xmap_in_rho <- read_tsv(glue("{sim_data_path}/xmap_in_2pop_rho.tsv.gz"))
 
-xmap_ind_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_ind_2pop_rho.tsv.gz")
+xmap_ind_rho <- read_tsv("~/Documents/github/data/sushie_results/sim3/xmap_ind_2pop_rho.tsv.gz")
 
-sushie_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/sushie_2pop_cs.tsv.gz")
+sushie_cs_pop2 <- read_tsv(glue("{sim_data_path}/sushie_2pop_cs.tsv.gz"))
 
-xmap_in_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_in_2pop_cs.tsv.gz")
+xmap_in_cs_pop2 <- read_tsv(glue("{sim_data_path}/xmap_in_2pop_cs.tsv.gz"))
 
-xmap_ind_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/xmap_ind_2pop_cs.tsv.gz")
+xmap_ind_cs_pop2 <- read_tsv(glue("{sim_data_path}/xmap_ind_2pop_cs.tsv.gz"))
 
 ref_param_rho <- sushie_rho %>%
   filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
@@ -143,7 +147,31 @@ df_rho <- sushie_rho %>%
   summarize(mrho = mean(est_rho),
     se = 1.96 * (sd(est_rho) / sqrt(n())))
 
-small_p4 <- ggplot(df_rho,
+tmp_df_rho <- read_tsv(glue("{sim_data_path}/sushie_2pop_rho_all.tsv.gz"))
+
+tmp_df_rho <- tmp_df_rho %>%
+  filter(!is.na(Lidx)) %>%
+  select(-CSIndex) %>%
+  bind_rows(tmp_df_rho %>%
+      filter(is.na(Lidx)) %>%
+      select(-Lidx) %>%
+      rename(Lidx = CSIndex)) %>% 
+  filter(Lidx==1) %>%
+  filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
+  filter(grepl("mesusie", method))
+
+df_rho2 <- tmp_df_rho %>%
+  group_by(method, sim, N, L1, L2, L3, h2g, rho) %>%
+  summarize(mrho = mean(est_rho),
+    se = 1.96 *(sd(est_rho) / sqrt(n()))) %>%
+  ungroup() %>%
+  mutate(method ="MESuSiE") %>%
+  select(sim, rho, mrho, name=method, se)
+
+df_rho_all <- bind_rows(df_rho, df_rho2) %>%
+  mutate(name = factor(name, levels = c("SuShiE", "MESuSiE", "XMAP", "XMAP-IND")))
+
+small_p4 <-ggplot(df_rho_all,
   aes(x = factor(rho), y = mrho, color = name)) +
   geom_point(size=point_size, position=position_dodge(width=0.5)) +
   geom_errorbar(aes(ymin = mrho - se, ymax = mrho + se),
@@ -156,6 +184,8 @@ small_p4 <- ggplot(df_rho,
   ylab("Estimation") +
   xlab("True Effect Size Correlation") +
   theme_sim() 
+
+2*pnorm((0.963-0.99)/(0.0234/1.96))
 
 load("./data/df_r2twas.RData")
 
@@ -212,7 +242,6 @@ ggarrange(small_p1, small_p2, small_p3, small_p4, small_p5, small_p6,
   nrow = 3, ncol = 2, labels = c("A", "B", "C", "D", "E", "F"),
   common.legend = TRUE, legend="bottom", font.label = list(size=8))
 
-# ggsave(filename = "./manuscript_plots/p1.png",
-#   width = p_width, height = 6)
+# ggsave(filename = "./manuscript_plots/p2.png", width = p_width, height = 6)
 
 

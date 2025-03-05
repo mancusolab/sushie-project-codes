@@ -5,6 +5,12 @@ library(stringr)
 library(rmeta)
 
 source("./utils.R")
+
+
+# zenodo folder
+ldsc_annotation_folder <- "~/Downloads/sushie_real_data_results/ldsc_annotation"
+ldsc_output_folder <- "~/Downloads/sushie_real_data_results/ldsc_output"
+
 traits <- c("EA_BAS", "EA_LYM", "EA_MON",
   "EA_WBC", "EA_NEU", "EA_EOS")
 
@@ -20,15 +26,15 @@ method_colors <-c("SuShiE" = "#1b9e77", "SuShiE-Indep" = "#d95f02",
 
 all_res <- tibble()
 for (study_name in studies) {
-  anno_file <- read_tsv(glue("~/Downloads/annotations/{study_name}.tsv.gz"))
+  anno_file <- read_tsv(glue("{ldsc_annotation_folder}/{study_name}.tsv.gz"))
   for (trait_name in traits) {
     for (method_name in methods) {
       for (type_name in types) {
-        tmp_df <- read_tsv(glue("~/Downloads/out_sldsc/{trait_name}.{study_name}_{method_name}_{type_name}.bed.baselineLD.results")) %>%
+        tmp_df <- read_tsv(glue("{ldsc_output_folder}/{trait_name}.{study_name}_{method_name}_{type_name}.bed.baselineLD.results")) %>%
           filter(Category %in% "L2_1") %>%
           select(Category, Prop._SNPs, Coefficient, Coefficient_std_error, `Coefficient_z-score`)
         colnames(tmp_df) <- c("cate", "p", "tau", "tau_se", "tau_z")
-        tmp_log <- read_lines(glue("~/Downloads/out_sldsc/{trait_name}.{study_name}_{method_name}_{type_name}.bed.baselineLD.log")) 
+        tmp_log <- read_lines(glue("{ldsc_outout_folder}/{trait_name}.{study_name}_{method_name}_{type_name}.bed.baselineLD.log")) 
         
         h2g <- as.numeric(gsub(" (.+)", "", gsub("Total Observed scale h2\\: ", "",
           tmp_log[grepl("scale h2", tmp_log)])))

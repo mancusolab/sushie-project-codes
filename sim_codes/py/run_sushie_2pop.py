@@ -10,7 +10,6 @@ from sushie.infer_ss import infer_sushie_ss
 import helper_function as hf
 import numpy as np
 
-import MultiSuSiE
 
 config.update("jax_enable_x64", True)
 
@@ -126,39 +125,6 @@ def main(args):
                            "BP2": [jnp.min(new_snps2.pos.values), jnp.max(new_snps2.pos.values)]})
     df_met.to_csv(f"{args.tmp_output}.md.sim{args.sim}.locus{args.locus}.tsv", index=False, sep="\t", header=None)
 
-    # perform multisusie
-    multisusie1_converged = True
-    try:
-        multisusie1 = MultiSuSiE.multisusie_rss(z_list=[np.array(ss_list[0].z.values), np.array(ss_list[1].z.values)],
-                                                        R_list=output_dic["trueLD"][0:2], rho=np.array([[1, 0.1], [0.1, 1]]),
-                                                        population_sizes=N, L=args.L2, max_iter=500, tol=0.0001,
-                                                        min_abs_corr=0.5)
-    except Exception as e:
-        multisusie1_converged = False
-
-    multisusie2_converged = True
-    try:
-        multisusie2 = MultiSuSiE.multisusie(X_list=[np.array(X[0]), np.array(X[1])], Y_list=[np.array(y[0]), np.array(y[1])], rho=np.array([[1, 0.1], [0.1, 1]]), L=args.L2,standardize=True,intercept=False,float_type=np.float64)
-    except Exception as e:
-        multisusie2_converged = False
-
-
-    multisusie1_cs = []
-    multisusie2_cs = []
-    for idx in range(args.L2):
-        if multisusie1_converged and multisusie1.sets[3][idx]:
-            multisusie1_cs.append(pd.DataFrame({"CSIndex": idx + 1, "SNPIndex": multisusie1.sets[0][idx]}))
-        else:
-            multisusie1_cs.append(pd.DataFrame({"CSIndex": [], "SNPIndex": []}))
-
-        if multisusie2_converged and multisusie2.sets[3][idx]:
-            multisusie2_cs.append(pd.DataFrame({"CSIndex": idx+1, "SNPIndex": multisusie2.sets[0][idx]}))
-        else:
-            multisusie2_cs.append(pd.DataFrame({"CSIndex": [], "SNPIndex": []}))
-
-    multisusie1_cs = pd.concat(multisusie1_cs, axis=0)
-    multisusie2_cs = pd.concat(multisusie2_cs, axis=0)
-
     # perform sushie
     sushie = infer_sushie(Xs=X, ys=y, L=args.L2, threshold=0.95)
     indep = infer_sushie(Xs=X, ys=y, L=args.L2, rho=[0], no_update=True, threshold=0.95)
@@ -171,16 +137,6 @@ def main(args):
     lds = jnp.stack(output_dic["trueLD"][0:2], axis=0)
     sushie_ss = infer_sushie_ss(zs=z_ss, lds=lds, ns=jnp.array(N)[:, jnp.newaxis], L=args.L2, threshold=0.95)
 
-    df_sens = pd.DataFrame({"sushie": [1 * sushie.elbo_increase],
-                            "indep": [1 * indep.elbo_increase],
-                            "meta": [1 * (meta1.elbo_increase and meta2.elbo_increase)],
-                            "susie": [1 * susie.elbo_increase],
-                            "susie_ss": [1 * sushie_ss.elbo_increase],
-                            "multisusie.ss": [1 * multisusie1_converged],
-                            "multisusie.ind": [1 * multisusie2_converged]})
-
-    df_sens = add_annotation(df_sens, args)
-    df_sens.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.sens.tsv", sep="\t", index=False)
 
     # track est_rho
     covar1 = jnp.transpose(sushie.posteriors.weighted_sum_covar)[0, 0]
@@ -200,7 +156,8 @@ def main(args):
     df_rho = pd.concat([df_rho, df_rho2], axis=0)
     df_rho = add_annotation(df_rho, args)
     df_rho.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.rho.tsv", sep="\t", index=False)
-
+    df_rho.to_csv(f"{args.tmp_output}.sushie.sim{args.sim}.locus{args.locus}.rho.tsv", sep="\t", index=False)
+    
     meta_cs = pd.concat([meta1.cs, meta2.cs], axis=0).drop_duplicates(subset="SNPIndex")
 
     # PIP
@@ -219,19 +176,6 @@ def main(args):
     df_pip["susie_ss_pip"] = sushie_ss.pip_all[g[0:args.L1]]
     df_pip["susie_ss_cali"] = jnp.isin(g[0:args.L1], sushie_ss.cs.SNPIndex.values.astype(int)).astype(int)
 
-    if multisusie1_converged:
-        df_pip["multisusie.ss_pip"] = hf.make_pip(multisusie1.alpha)[g[0:args.L1]]
-        df_pip["multisusie.ss_cali"] = jnp.isin(g[0:args.L1], multisusie1_cs.SNPIndex.values.astype(int)).astype(int)
-    else:
-        df_pip["multisusie.ss_pip"] = jnp.nan
-        df_pip["multisusie.ss_cali"] = jnp.nan
-
-    if multisusie2_converged:
-        df_pip["multisusie.ind_pip"] = hf.make_pip(multisusie2.alpha)[g[0:args.L1]]
-        df_pip["multisusie.ind_cali"] = jnp.isin(g[0:args.L1], multisusie2_cs.SNPIndex.values.astype(int)).astype(int)
-    else:
-        df_pip["multisusie.ind_pip"] = jnp.nan
-        df_pip["multisusie.ind_cali"] = jnp.nan
 
     df_pip = add_annotation(df_pip, args)
     df_pip.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.pip.tsv", sep="\t", index=False)
@@ -243,19 +187,130 @@ def main(args):
     meta_cs = meta_cs.groupby("CSIndex")["SNPIndex"].count().reset_index().rename(columns={"SNPIndex": "meta"})
     susie_cs = susie.cs.groupby("CSIndex")["SNPIndex"].count().reset_index().rename(columns={"SNPIndex": "susie"})
     sushie_ss_cs = sushie_ss.cs.groupby("CSIndex")["SNPIndex"].count().reset_index().rename(columns={"SNPIndex": "susie_ss"})
-    multisusie1_cs = multisusie1_cs.groupby("CSIndex")["SNPIndex"].count().reset_index().rename(columns={"SNPIndex": "multisusie.ss"})
-    multisusie2_cs = multisusie2_cs.groupby("CSIndex")["SNPIndex"].count().reset_index().rename(columns={"SNPIndex": "multisusie.ind"})
 
     df_cs = df_cs.merge(sushie_cs, how="left", on="CSIndex").merge(indep_cs, how="left", on="CSIndex").\
         merge(meta_cs, how="left", on="CSIndex") \
         .merge(susie_cs, how="left", on="CSIndex")\
-        .merge(sushie_ss_cs, how="left", on="CSIndex")\
-        .merge(multisusie1_cs, how="left", on="CSIndex")\
-        .merge(multisusie2_cs, how="left", on="CSIndex")
+        .merge(sushie_ss_cs, how="left", on="CSIndex")
 
     df_cs = add_annotation(df_cs, args)
     df_cs.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.cs.tsv", sep="\t", index=False)
 
+    meta_cs = pd.concat([meta1.cs, meta2.cs], axis=0).drop_duplicates(subset="SNPIndex")
+    
+    # PIP
+    df_pip = snps[["snp"]]
+    df_pip["SNPIndex_0based"] = range(snps.shape[0])
+    df_pip["SNPIndex_1based"] = range(1, snps.shape[0]+1)
+    df_pip["causal"] = jnp.isin(df_pip.SNPIndex_0based.values, g[0:args.L1]).astype(int)
+    df_pip["CSIndex"] = 0
+    df_pip.loc[g[0:args.L1], "CSIndex"] = jnp.argsort(-jnp.array(bvec**2)[:, 0]) + 1
+    df_pip["sushie_pip"] = sushie.pip_all
+    df_pip["indep_pip"] = indep.pip_all
+    df_pip["meta_pip"] = 1 - (1 - meta1.pip_all) * (1 - meta2.pip_all)
+    df_pip["susie_pip"] = susie.pip_all
+    df_pip["susie_ss_pip"] = sushie_ss.pip_all
+
+    df_pip = add_annotation(df_pip, args)
+    df_pip.to_csv(f"{args.tmp_output}.sushie.sim{args.sim}.locus{args.locus}.pip.tsv", sep="\t", index=False)
+
+    # credible set
+    tmp_sushie_cs = sushie.cs[["CSIndex", "SNPIndex", "pip_all"]]
+    tmp_sushie_cs["SNPIndex_0based"] = tmp_sushie_cs.SNPIndex
+    tmp_sushie_cs["SNPIndex_1based"] = tmp_sushie_cs.SNPIndex + 1
+    tmp_sushie_cs["causal"] = jnp.isin(tmp_sushie_cs.SNPIndex.values.astype(int), g[0:args.L1]).astype(int)
+    tmp_sushie_cs["method"] = "sushie"
+    tmp_sushie_cs = tmp_sushie_cs[["CSIndex", "SNPIndex_0based", "SNPIndex_1based", "pip_all", "causal", "method"]]
+    
+    if tmp_sushie_cs.empty:
+        new_row = pd.DataFrame([{
+            "CSIndex": np.nan,
+            "SNPIndex_0based": np.nan,
+            "SNPIndex_1based": np.nan,
+            "pip_all": np.nan,
+            "causal": np.nan,
+            "method": "sushie"
+        }])
+        tmp_sushie_cs = pd.concat([tmp_sushie_cs, new_row], axis=0, ignore_index=True)
+        
+    tmp_sushie_ss_cs = sushie_ss.cs[["CSIndex", "SNPIndex", "pip_all"]]
+    tmp_sushie_ss_cs["SNPIndex_0based"] = tmp_sushie_ss_cs.SNPIndex
+    tmp_sushie_ss_cs["SNPIndex_1based"] = tmp_sushie_ss_cs.SNPIndex + 1
+    tmp_sushie_ss_cs["causal"] = jnp.isin(tmp_sushie_ss_cs.SNPIndex.values.astype(int), g[0:args.L1]).astype(int)
+    tmp_sushie_ss_cs["method"] = "sushie_ss"
+    tmp_sushie_ss_cs = tmp_sushie_ss_cs[["CSIndex", "SNPIndex_0based", "SNPIndex_1based", "pip_all", "causal", "method"]]
+    
+    if tmp_sushie_ss_cs.empty:
+        new_row = pd.DataFrame([{
+            "CSIndex": np.nan,
+            "SNPIndex_0based": np.nan,
+            "SNPIndex_1based": np.nan,
+            "pip_all": np.nan,
+            "causal": np.nan,
+            "method": "sushie_ss"
+        }])
+        tmp_sushie_ss_cs = pd.concat([tmp_sushie_ss_cs, new_row], axis=0, ignore_index=True)
+        
+    tmp_meta_cs = meta_cs[["CSIndex", "SNPIndex", "pip_all"]]
+    tmp_meta_cs["SNPIndex_0based"] = tmp_meta_cs.SNPIndex
+    tmp_meta_cs["SNPIndex_1based"] = tmp_meta_cs.SNPIndex + 1
+    tmp_meta_cs["causal"] = jnp.isin(tmp_meta_cs.SNPIndex.values.astype(int), g[0:args.L1]).astype(int)
+    tmp_meta_cs["method"] = "meta"
+    tmp_meta_cs = tmp_meta_cs[["CSIndex", "SNPIndex_0based", "SNPIndex_1based", "pip_all", "causal", "method"]]
+    
+    if tmp_meta_cs.empty:
+        new_row = pd.DataFrame([{
+            "CSIndex": np.nan,
+            "SNPIndex_0based": np.nan,
+            "SNPIndex_1based": np.nan,
+            "pip_all": np.nan,
+            "causal": np.nan,
+            "method": "meta"
+        }])
+        tmp_meta_cs = pd.concat([tmp_meta_cs, new_row], axis=0, ignore_index=True)
+        
+    tmp_indep_cs = indep.cs[["CSIndex", "SNPIndex", "pip_all"]]
+    tmp_indep_cs["SNPIndex_0based"] = tmp_indep_cs.SNPIndex
+    tmp_indep_cs["SNPIndex_1based"] = tmp_indep_cs.SNPIndex + 1
+    tmp_indep_cs["causal"] = jnp.isin(tmp_indep_cs.SNPIndex.values.astype(int), g[0:args.L1]).astype(int)
+    tmp_indep_cs["method"] = "indep"
+    tmp_indep_cs = tmp_indep_cs[["CSIndex", "SNPIndex_0based", "SNPIndex_1based", "pip_all", "causal", "method"]]
+    
+    if tmp_indep_cs.empty:
+        new_row = pd.DataFrame([{
+            "CSIndex": np.nan,
+            "SNPIndex_0based": np.nan,
+            "SNPIndex_1based": np.nan,
+            "pip_all": np.nan,
+            "causal": np.nan,
+            "method": "indep"
+        }])
+        tmp_indep_cs = pd.concat([tmp_indep_cs, new_row], axis=0, ignore_index=True)
+    tmp_susie_cs = susie.cs[["CSIndex", "SNPIndex", "pip_all"]]
+    tmp_susie_cs["SNPIndex_0based"] = tmp_susie_cs.SNPIndex
+    tmp_susie_cs["SNPIndex_1based"] = tmp_susie_cs.SNPIndex + 1
+    tmp_susie_cs["causal"] = jnp.isin(tmp_susie_cs.SNPIndex.values.astype(int), g[0:args.L1]).astype(int)
+    tmp_susie_cs["method"] = "susie"
+    tmp_susie_cs = tmp_susie_cs[["CSIndex", "SNPIndex_0based", "SNPIndex_1based", "pip_all", "causal", "method"]]
+    
+    if tmp_susie_cs.empty:
+        new_row = pd.DataFrame([{
+            "CSIndex": np.nan,
+            "SNPIndex_0based": np.nan,
+            "SNPIndex_1based": np.nan,
+            "pip_all": np.nan,
+            "causal": np.nan,
+            "method": "susie"
+        }])
+        tmp_susie_cs = pd.concat([tmp_susie_cs, new_row], axis=0, ignore_index=True)
+        
+    df_cs_tmp = pd.concat([tmp_sushie_cs, tmp_sushie_ss_cs, tmp_meta_cs, tmp_indep_cs, tmp_susie_cs], axis=0)
+    df_cs = snps[["snp"]]
+    df_cs["SNPIndex_0based"] = range(snps.shape[0])
+    df_cs = df_cs.merge(df_cs_tmp, on="SNPIndex_0based", how="right")
+    df_cs = add_annotation(df_cs, args)
+    df_cs.to_csv(f"{args.tmp_output}.sushie.sim{args.sim}.locus{args.locus}.cs.tsv", sep="\t", index=False)
+    
     return 0
 
 

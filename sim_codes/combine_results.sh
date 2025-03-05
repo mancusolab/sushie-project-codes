@@ -1,20 +1,9 @@
 #!/bin/bash
 salloc --time=12:00:00 --mem=16G --partition=conti
-out=~/data/sushie/sim2
-
-# get the running time
-cd /scratch1/zeyunlu/sushie_sim_time
-for type in sushie_ind sushie_ss multisusie_ss multisusie_ind mesusie xmap xmap_ind susiex
-do
-  echo $type
-  rm -rf ${out}/sim_time_${type}.tsv.gz
-  head -1 time_${type}_ENSG00000268869_ESPNP.tsv > ${out}/sim_time_${type}.tsv
-  find . -name "time_${type}_*.tsv" | xargs -n 1 tail -n +2 >> ${out}/sim_time_${type}.tsv
-  gzip ${out}/sim_time_${type}.tsv
-done
+out=~/data/sushie/sim3
 
 cd /scratch1/zeyunlu/sushie_sim_2pop/sushie
-for type in cs pip rho sens
+for type in pip
 do
   echo $type
   rm -rf ${out}/sushie_2pop_${type}.tsv.gz
@@ -150,3 +139,47 @@ do
   find . -name "*.${type}.tsv" | xargs -n 1 tail -n +2 >> ${out}/sim_3pop_${type}.tsv
   gzip ${out}/sim_3pop_${type}.tsv
 done
+
+# new simulations
+out=~/data/sushie/sim3
+cd /scratch1/zeyunlu/rho_files/
+for type in rho
+do
+  echo $type
+  rm -rf ${out}/sushie_2pop_${type}_all.tsv.gz
+  head -1 sim10.locus1.${type}.tsv > ${out}/sushie_2pop_${type}_all.tsv
+  find . -name "*.${type}.tsv" | xargs -n 1 tail -n +2 >> ${out}/sushie_2pop_${type}_all.tsv
+  gzip ${out}/sushie_2pop_${type}_all.tsv
+done
+
+out=~/data/sushie/sim3
+cd /scratch1/zeyunlu/sushie_sim_fst/
+
+for type in fst ld
+do
+  rm -rf ${out}/sim_causal_${type}.tsv.gz
+  cat *.${type}.tsv > ${out}/sim_causal_${type}.tsv
+  gzip ${out}/sim_causal_${type}.tsv
+done
+
+
+out=~/data/sushie/sim3
+cd /scratch1/zeyunlu/tmp_gene_fst/
+
+rm -rf ${out}/sim_gene_fst.tsv.gz
+cat *.tsv > ${out}/sim_gene_fst.tsv
+gzip ${out}/sim_gene_fst.tsv
+
+
+
+out=~/data/sushie/sim3
+cd /scratch1/zeyunlu/sushie_rnaseq/fst2
+
+echo $type
+rm -rf ${out}/sushie_real_fst.tsv.gz
+head -1 ENSG00000284594_MIR7847_all_snp.fst.summary > ${out}/sushie_real_fst.tsv
+find . -name "*.summary" | xargs -n 1 tail -n +2 >> ${out}/sushie_real_fst.tsv
+gzip ${out}/sushie_real_fst.tsv
+
+
+

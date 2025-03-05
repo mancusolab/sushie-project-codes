@@ -3,6 +3,10 @@ library(ggpubr)
 library(broom)
 library(RColorBrewer)
 
+# to replicate our figures you need to download the data from the zenodo link
+# and point it to simulation data paht
+sim_data_path <- "~/Documents/github/data/sushie_results/sim3"
+
 ffont <- "sans"
 fontsize <- 9
 errbar_width <- 0.5
@@ -275,12 +279,10 @@ pp(tt2, "h2g", "cis-SNP h2g for 2nd Ancestry")
 
 # ggsave("./manuscript_plots/supp/s6.png", width = p_width, height = p_height+0.5)
 
-
-
 # rho
-tmp_rho <- read_tsv("~/Documents/github/data/sushie_results/sim2/sushie_2pop_rho.tsv.gz")
+tmp_rho <- read_tsv(glue("{sim_data_path}sushie_2pop_rho.tsv.gz"))
 
-sushie_cs_pop2 <- read_tsv("~/Documents/github/data/sushie_results/sim2/sushie_2pop_cs.tsv.gz")
+sushie_cs_pop2 <- read_tsv(glue("{sim_data_path}/sushie_2pop_cs.tsv.gz"))
 
 all_sim1 <- sushie_cs_pop2 %>%
   filter(N %in% "400:400" & L1 == L2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
@@ -314,13 +316,13 @@ rho_13 <- df_rho1 %>%
 rho_all1 <- bind_rows(rho_11, rho_12, rho_13)
 
 p_rho1 <- ggplot(rho_all1,
-  aes(x = rho, y = mrho, color = type)) +
-  geom_abline(slope=1, intercept = 0) +
-  geom_point() +
+  aes(x = factor(rho), y = mrho, color = type)) +
+  geom_point(position=position_dodge(width=0.5)) +
   geom_errorbar(aes(ymin = mrho - se, ymax = mrho + se),
-    width = 0.02) +
-  scale_y_continuous( labels=scaleFUN) +
-  scale_x_continuous(breaks = c(0.01, 0.4, 0.8, 0.99)) +
+    width = 0.02, position=position_dodge(width=0.5)) +
+  scale_y_continuous(breaks = c(0.01, 0.4, 0.8, 0.99), labels=scaleFUN) +
+  geom_hline(yintercept = c(0.01, 0.4, 0.8, 0.99),
+    linetype="dashed",color="grey", alpha=0.5) +
   scale_color_brewer(palette = "Paired") +
   ylab("Est. Effect Size Correlation") +
   xlab("True Effect Size Correlation") +
@@ -635,7 +637,4 @@ ggarrange(r2_n, r2_h2g, twas_n, twas_h2ge,
   labels = c("A", "B", "C", "D"), font.label = list(size = 8))
 
 # ggsave("./manuscript_plots/supp/s11.png", width = p_width, height = p_height+2)
-
-
-
 

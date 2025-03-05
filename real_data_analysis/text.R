@@ -2,39 +2,44 @@
 # the first two supp tables
 
 library(tidyverse)
+library(glue)
 library(broom)
 
+# change the data folder to the zenodo-downloaded data folder
+data_folder <- "~/Documents/github/data/sushie_results/real2"
+metadata_folder <- "~/Documents/github/data/sushie_results/metadata2"
+
 # abstract and introduction
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz")
+rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))
 length(unique(rnaseq_cov$trait))
 
-proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz")
+proteins_cov <- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz"))
 length(unique(proteins_cov$trait))
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz")
+genoa_cov <- read_tsv(glue("{data_folder}/genoa_normal.sushie_cs.tsv.gz"))
 length(unique(genoa_cov$trait))
 
 length(unique(rnaseq_cov$trait)) + length(unique(proteins_cov$trait)) + length(unique(genoa_cov$trait))
 
 # validation
-v5_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_normal.sushie_cs.tsv.gz")
+v5_cov <- read_tsv(glue("{data_folder}/v5_normal.sushie_cs.tsv.gz"))
 length(unique(v5_cov$trait))
 
-interval_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/interval_normal.sushie_cs.tsv.gz")
+interval_cov <- read_tsv(glue("{data_folder}/interval_normal.sushie_cs.tsv.gz"))
 length(unique(interval_cov$trait))
 
-geuvadis_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_normal.sushie_cs.tsv.gz")
+geuvadis_cov <- read_tsv(glue("{data_folder}/geuvadis_normal.sushie_cs.tsv.gz"))
 length(unique(geuvadis_cov$trait))
 
 length(unique(v5_cov$trait)) + length(unique(interval_cov$trait)) +
   length(unique(geuvadis_cov$trait))
 
 # overlap
-v5_meta <- read_tsv("~/Documents/github/data/sushie_results/metadata2/v5_overlap_gene_list_noMHC.tsv", col_names = FALSE)
+v5_meta <- read_tsv(glue("{metadata_folder}/v5_overlap_gene_list_noMHC.tsv", col_names = FALSE))
 
-interval_meta <- read_tsv("~/Documents/github/data/sushie_results/metadata2/interval_overlap_gene_list_noMHC.tsv", col_names = FALSE)
+interval_meta <- read_tsv(glue("{metadata_folder}/interval_overlap_gene_list_noMHC.tsv"), col_names = FALSE)
 
-geuvadis_meta <- read_tsv("~/Documents/github/data/sushie_results/metadata2/geuvadis_overlap_gene_list_noMHC.tsv", col_names = FALSE)
+geuvadis_meta <- read_tsv(glue("{metadata_folder}/geuvadis_overlap_gene_list_noMHC.tsv"), col_names = FALSE)
 
 
 nrow(v5_meta %>% filter(X1 %in% v5_cov$trait))
@@ -47,99 +52,87 @@ nrow(v5_meta %>% filter(X1 %in% v5_cov$trait)) +
 
 
 # more molQTLs
-rnaseq_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.sushie_cs.tsv.gz") %>%
+rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-rnaseq_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_indep.sushie_cs.tsv.gz") %>%
+rnaseq_indep <- read_tsv(glue("{data_folder}/rnaseq_indep.sushie_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-rnaseq_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.meta_cs.tsv.gz") %>%
+rnaseq_meta <- read_tsv(glue("{data_folder}/rnaseq_normal.meta_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = meta_pip_all)
 
-rnaseq_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_normal.mega_cs.tsv.gz") %>%
+rnaseq_mega <- read_tsv(glue("{data_folder}/rnaseq_normal.mega_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-rnaseq_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_susiex_cs.tsv.gz") %>%
+rnaseq_susiex <- read_tsv(glue("{data_folder}/rnaseq_susiex_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-rnaseq_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_mesusie_cs.tsv.gz") %>%
+rnaseq_mesusie <- read_tsv(glue("{data_folder}/rnaseq_mesusie_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-# rnaseq_multisusie <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_multisusie_cs.tsv.gz") %>%
-#   mutate(study = "mesa.mrna") %>%
-#   select(study, trait, CSIndex, snp, pip)
-
-rnaseq_xmap <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_xmap_cs.tsv.gz") %>%
+rnaseq_xmap <- read_tsv(glue("{data_folder}/rnaseq_xmap_cs.tsv.gz")) %>%
   mutate(study = "mesa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-proteins_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.sushie_cs.tsv.gz") %>%
+proteins_cov <- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz")) %>%
   mutate(study = "mesa.protens") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-proteins_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_indep.sushie_cs.tsv.gz") %>%
+proteins_indep <- read_tsv(glue("{data_folder}/proteins_indep.sushie_cs.tsv.gz")) %>%
   mutate(study = "mesa.protens") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-proteins_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.meta_cs.tsv.gz") %>%
+proteins_meta <- read_tsv(glue("{data_folder}/proteins_normal.meta_cs.tsv.gz")) %>%
   mutate(study = "mesa.protens") %>%
   select(study, trait, CSIndex, snp, pip = meta_pip_all)
 
-proteins_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_normal.mega_cs.tsv.gz") %>%
+proteins_mega <- read_tsv(glue("{data_folder}/proteins_normal.mega_cs.tsv.gz")) %>%
   mutate(study = "mesa.protens") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-proteins_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_susiex_cs.tsv.gz") %>%
+proteins_susiex <- read_tsv(glue("{data_folder}/proteins_susiex_cs.tsv.gz")) %>%
   mutate(study = "mesa.protens") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-proteins_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_mesusie_cs.tsv.gz") %>%
-  mutate(study = "mesa.protens") %>%
-  select(study, trait, CSIndex, snp, pip = pip_all)
-# 
-# proteins_multisusie <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_multisusie_cs.tsv.gz") %>%
-#   mutate(study = "mesa.protens") %>%
-#   select(study, trait, CSIndex, snp, pip)
-
-proteins_xmap <- read_tsv("~/Documents/github/data/sushie_results/real2/proteins_xmap_cs.tsv.gz") %>%
+proteins_mesusie <- read_tsv(glue("{data_folder}/proteins_mesusie_cs.tsv.gz")) %>%
   mutate(study = "mesa.protens") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-genoa_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.sushie_cs.tsv.gz") %>%
+proteins_xmap <- read_tsv(glue("{data_folder}/proteins_xmap_cs.tsv.gz")) %>%
+  mutate(study = "mesa.protens") %>%
+  select(study, trait, CSIndex, snp, pip = pip_all)
+
+genoa_cov <- read_tsv(glue("{data_folder}/genoa_normal.sushie_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-genoa_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_indep.sushie_cs.tsv.gz") %>%
+genoa_indep <- read_tsv(glue("{data_folder}/genoa_indep.sushie_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-genoa_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.meta_cs.tsv.gz") %>%
+genoa_meta <- read_tsv(glue("{data_folder}/genoa_normal.meta_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = meta_pip_all)
 
-genoa_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_normal.mega_cs.tsv.gz") %>%
+genoa_mega <- read_tsv(glue("{data_folder}/genoa_normal.mega_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-genoa_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_susiex_cs.tsv.gz") %>%
+genoa_susiex <- read_tsv(glue("{data_folder}/genoa_susiex_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-genoa_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_mesusie_cs.tsv.gz") %>%
+genoa_mesusie <- read_tsv(glue("{data_folder}/genoa_mesusie_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-# genoa_multisusie <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_multisusie_cs.tsv.gz") %>%
-#   mutate(study = "genoa.mrna") %>%
-#   select(study, trait, CSIndex, snp, pip)
-
-genoa_xmap <- read_tsv("~/Documents/github/data/sushie_results/real2/genoa_xmap_cs.tsv.gz") %>%
+genoa_xmap <- read_tsv(glue("{data_folder}/genoa_xmap_cs.tsv.gz")) %>%
   mutate(study = "genoa.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
@@ -167,14 +160,9 @@ cp5 <- nrow(distinct(filter(rnaseq_mesusie, !is.na(snp)), trait)) +
   nrow(distinct(filter(genoa_mesusie, !is.na(snp)), trait)) +
   nrow(distinct(filter(proteins_mesusie, !is.na(snp)), trait))
 
-# cp6 <- nrow(distinct(filter(rnaseq_multisusie, !is.na(snp)), trait)) +
-#   nrow(distinct(filter(genoa_multisusie, !is.na(snp)), trait)) +
-#   nrow(distinct(filter(proteins_multisusie, !is.na(snp)), trait))
-
 cp7 <- nrow(distinct(filter(rnaseq_xmap, !is.na(snp)), trait)) +
   nrow(distinct(filter(genoa_xmap, !is.na(snp)), trait)) +
   nrow(distinct(filter(proteins_xmap, !is.na(snp)), trait))
-
 
 cp7
 
@@ -219,11 +207,6 @@ n_mesusie <- rnaseq_mesusie %>%
   filter(!is.na(snp)) %>%
   distinct(trait, CSIndex) %>%
   nrow()
-
-# n_multisusie <- rnaseq_multisusie %>%
-#   filter(!is.na(snp)) %>%
-#   distinct(trait, CSIndex) %>%
-#   nrow()
 
 n_cov - (n_indep + n_meta + n_mega + n_susiex + n_mesusie)/5
 
@@ -325,36 +308,13 @@ df_count_mesusie <- sushie_comp %>%
       rename(mesusie = count),
     by = "trait")
 
-# df_count_multisusie <- sushie_comp %>%
-#   full_join(rnaseq_multisusie %>%
-#       distinct(trait) %>%
-#       mutate(count = 1) %>%
-#       right_join(rnaseq_all_traits, by = "trait") %>%
-#       mutate(count = ifelse(is.na(count), 0, 1)) %>%
-#       bind_rows(
-#         proteins_multisusie %>%
-#           distinct(trait) %>%
-#           mutate(count = 1) %>%
-#           right_join(proteins_all_traits, by = "trait") %>%
-#           mutate(count = ifelse(is.na(count), 0, 1)),
-#         genoa_multisusie %>%
-#           distinct(trait) %>%
-#           mutate(count = 1) %>%
-#           right_join(genoa_all_traits, by = "trait") %>%
-#           mutate(count = ifelse(is.na(count), 0, 1)),
-#       ) %>%
-#       rename(multisusie = count),
-#     by = "trait")
-
 tidy(t.test(df_count_indep$sushie, df_count_indep$indep))
 tidy(t.test(df_count_mega$sushie, df_count_mega$mega))
 tidy(t.test(df_count_meta$sushie, df_count_meta$meta))
 tidy(t.test(df_count_susiex$sushie, df_count_susiex$susiex))
 tidy(t.test(df_count_mesusie$sushie, df_count_mesusie$mesusie))
-# tidy(t.test(df_count_multisusie$sushie, df_count_multisusie$multisusie, alternative = "greater"))
+
 cp0 / cp2
-
-
 
 # basic summary data comparison
 source("utils.R")
@@ -378,7 +338,6 @@ agg_res <- round(basic_sum(
   bind_rows(rnaseq_mega, proteins_mega, genoa_mega),
   bind_rows(rnaseq_susiex, proteins_susiex, genoa_susiex),
   bind_rows(rnaseq_mesusie, proteins_mesusie, genoa_mesusie),
-  # bind_rows(rnaseq_multisusie, proteins_multisusie, genoa_multisusie),
   total = n_total
 ), 2) %>%
   mutate(type = row_number() - 1)
@@ -390,7 +349,6 @@ agg_comp <- basic_compare(
   bind_rows(rnaseq_mega, proteins_mega, genoa_mega),
   bind_rows(rnaseq_susiex, proteins_susiex, genoa_susiex),
   bind_rows(rnaseq_mesusie, proteins_mesusie, genoa_mesusie)
-  # bind_rows(rnaseq_multisusie, proteins_multisusie, genoa_multisusie)
   ) 
 
 comp_stats1 <- agg_res %>%
@@ -576,52 +534,52 @@ genoa_cov %>%
     prop = c_total/total) 
 
 # validation 
-v5_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_normal.sushie_cs.tsv.gz")  %>%
+v5_cov <- read_tsv(glue("{data_folder}/v5_normal.sushie_cs.tsv.gz"))  %>%
   mutate(study = "mesa.v5") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-v5_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_indep.sushie_cs.tsv.gz")  %>%
+v5_indep <- read_tsv(glue("{data_folder}/v5_indep.sushie_cs.tsv.gz"))  %>%
   mutate(study = "mesa.v5") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-v5_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_normal.meta_cs.tsv.gz")  %>%
+v5_meta <- read_tsv(glue("{data_folder}/v5_normal.meta_cs.tsv.gz"))  %>%
   mutate(study = "mesa.v5") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-v5_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_normal.mega_cs.tsv.gz")  %>%
+v5_mega <- read_tsv(glue("{data_folder}/v5_normal.mega_cs.tsv.gz"))  %>%
   mutate(study = "mesa.v5") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-v5_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_susiex_cs.tsv.gz") %>%
+v5_susiex <- read_tsv(glue("{data_folder}/v5_susiex_cs.tsv.gz")) %>%
   mutate(study = "v5") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-v5_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/v5_mesusie_cs.tsv.gz") %>%
+v5_mesusie <- read_tsv(glue("{data_folder}/v5_mesusie_cs.tsv.gz")) %>%
   mutate(study = "v5") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
 
-geuvadis_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_normal.sushie_cs.tsv.gz")  %>%
+geuvadis_cov <- read_tsv(glue("{data_folder}/geuvadis_normal.sushie_cs.tsv.gz"))  %>%
   mutate(study = "geuvadis.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-geuvadis_indep <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_indep.sushie_cs.tsv.gz") %>%
+geuvadis_indep <- read_tsv(glue("{data_folder}/geuvadis_indep.sushie_cs.tsv.gz")) %>%
   mutate(study = "geuvadis.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-geuvadis_meta <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_normal.meta_cs.tsv.gz") %>%
+geuvadis_meta <- read_tsv(glue("{data_folder}/geuvadis_normal.meta_cs.tsv.gz")) %>%
   mutate(study = "geuvadis.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-geuvadis_mega <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_normal.mega_cs.tsv.gz") %>%
+geuvadis_mega <- read_tsv(glue("{data_folder}/geuvadis_normal.mega_cs.tsv.gz")) %>%
   mutate(study = "geuvadis.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-geuvadis_susiex <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_susiex_cs.tsv.gz") %>%
+geuvadis_susiex <- read_tsv(glue("{data_folder}/geuvadis_susiex_cs.tsv.gz")) %>%
   mutate(study = "geuvadis.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
-geuvadis_mesusie <- read_tsv("~/Documents/github/data/sushie_results/real2/geuvadis_mesusie_cs.tsv.gz") %>%
+geuvadis_mesusie <- read_tsv(glue("{data_folder}/geuvadis_mesusie_cs.tsv.gz")) %>%
   mutate(study = "geuvadis.mrna") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
@@ -862,7 +820,7 @@ df1 <- comp_stats[1:5,] %>%
 
 # write_tsv(df1 %>% select(-name), "./tables/s8.tsv", col_names = FALSE)
 
-interval_cov <- read_tsv("~/Documents/github/data/sushie_results/real2/interval_normal.sushie_cs.tsv.gz") %>%
+interval_cov <- read_tsv(glue("{data_folder}/interval_normal.sushie_cs.tsv.gz")) %>%
   mutate(study = "interval") %>%
   select(study, trait, CSIndex, snp, pip = pip_all)
 
@@ -871,7 +829,7 @@ n_total_interval <- length(unique(interval_cov$trait))
 basic_sum(bind_rows(v5_cov, geuvadis_cov, interval_cov))
 basic_sum(interval_cov, total = n_total_interval)
 
-loss_ct <- read_tsv("~/Documents/github/data/sushie_results/real2/rnaseq_loss.tsv.gz")
+loss_ct <- read_tsv(glue("{data_folder}/rnaseq_loss.tsv.gz"))
 
 loss_ct  %>%
   pivot_longer(cols = -1) %>%
