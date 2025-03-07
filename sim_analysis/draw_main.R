@@ -1,11 +1,12 @@
 library(tidyverse)
+library(glue)
 library(ggpubr)
 library(broom)
 library(RColorBrewer)
 
 # to replicate our figures you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Downloads/sushie_sim_data_results"
+sim_data_path <- "~/Downloads/sushie_sim_data_results/"
 
 ffont <- "sans"
 fontsize <- 7
@@ -94,87 +95,24 @@ small_p3 <- ggplot(tmp_p3,
   xlab("molQTL Sample Size") +
   theme_sim()
 
-sushie_rho <- read_tsv(glue("{sim_data_path}/sushie_2pop_rho.tsv.gz"))
-
-xmap_in_rho <- read_tsv(glue("{sim_data_path}/xmap_in_2pop_rho.tsv.gz"))
-
-xmap_ind_rho <- read_tsv("~/Documents/github/data/sushie_results/sim3/xmap_ind_2pop_rho.tsv.gz")
-
-sushie_cs_pop2 <- read_tsv(glue("{sim_data_path}/sushie_2pop_cs.tsv.gz"))
-
-xmap_in_cs_pop2 <- read_tsv(glue("{sim_data_path}/xmap_in_2pop_cs.tsv.gz"))
-
-xmap_ind_cs_pop2 <- read_tsv(glue("{sim_data_path}/xmap_ind_2pop_cs.tsv.gz"))
-
-ref_param_rho <- sushie_rho %>%
-  filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
-  distinct(sim, locus, rho)
-
-total_sim <- sushie_cs_pop2 %>%
-  filter(!is.na(sushie)) %>%
-  distinct(sim, locus) %>%
-  bind_rows(xmap_in_cs_pop2 %>%
-      filter(!is.na(xmap)) %>%
-      distinct(sim, locus),
-    xmap_ind_cs_pop2 %>%
-      filter(!is.na(xmap)) %>%
-      distinct(sim, locus)) %>%
-  distinct(sim, locus)
-
-df_rho <- sushie_rho %>%
-  filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
-  filter(Lidx == 1) %>%
-  filter(method == "sushie") %>%
-  select(sim, locus, rho, CSIndex = Lidx, est_rho) %>%
-  inner_join(total_sim) %>%
-  mutate(name = "SuShiE") %>%
-  bind_rows(
-    xmap_in_rho %>%
-      filter(CSIndex == 1) %>%
-      right_join(ref_param_rho) %>%
-      select(sim, locus, rho, CSIndex, est_rho) %>%
-      inner_join(total_sim) %>%
-      mutate(name = "XMAP"),
-    xmap_ind_rho %>%
-      filter(CSIndex == 1) %>%
-      right_join(ref_param_rho) %>%
-      select(sim, locus, rho, CSIndex, est_rho) %>%
-      inner_join(total_sim) %>%
-      mutate(name = "XMAP-IND")
-  ) %>%
-  filter(!is.na(est_rho)) %>%
-  group_by(sim, rho, name) %>%
-  summarize(mrho = mean(est_rho),
-    se = 1.96 * (sd(est_rho) / sqrt(n())))
-
-tmp_df_rho <- read_tsv(glue("{sim_data_path}/sushie_2pop_rho_all.tsv.gz"))
-
-tmp_df_rho <- tmp_df_rho %>%
-  filter(!is.na(Lidx)) %>%
-  select(-CSIndex) %>%
-  bind_rows(tmp_df_rho %>%
-      filter(is.na(Lidx)) %>%
-      select(-Lidx) %>%
-      rename(Lidx = CSIndex)) %>% 
+df_rho <- read_tsv(glue("{sim_data_path}/sushie_2pop_rho_all.tsv.gz"))  %>%
   filter(Lidx==1) %>%
+  filter(method %in% c("sushie", "mesusie", "xmap", "xmap_ind")) %>%
   filter(N %in% "400:400" & L2 == 2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
-  filter(grepl("mesusie", method))
-
-df_rho2 <- tmp_df_rho %>%
   group_by(method, sim, N, L1, L2, L3, h2g, rho) %>%
   summarize(mrho = mean(est_rho),
-    se = 1.96 *(sd(est_rho) / sqrt(n()))) %>%
+    se = (sd(est_rho) / sqrt(n())),
+    n = n()) %>%
   ungroup() %>%
-  mutate(method ="MESuSiE") %>%
-  select(sim, rho, mrho, name=method, se)
+  select(sim, rho, mrho, name=method, se, n) %>%
+  mutate(name = factor(name,
+    levels = c("sushie", "mesusie", "xmap", "xmap_ind"),
+    labels = c("SuShiE", "MESuSiE", "XMAP", "XMAP-IND")))
 
-df_rho_all <- bind_rows(df_rho, df_rho2) %>%
-  mutate(name = factor(name, levels = c("SuShiE", "MESuSiE", "XMAP", "XMAP-IND")))
-
-small_p4 <-ggplot(df_rho_all,
+small_p4 <- ggplot(df_rho ,
   aes(x = factor(rho), y = mrho, color = name)) +
   geom_point(size=point_size, position=position_dodge(width=0.5)) +
-  geom_errorbar(aes(ymin = mrho - se, ymax = mrho + se),
+  geom_errorbar(aes(ymin = mrho -  1.96 *se, ymax = mrho +  1.96 *se),
     position=position_dodge(width=0.5), width = 0.2) +
   geom_hline(yintercept = c(0.01, 0.4, 0.8, 0.99),
     linetype="dashed",color="grey", alpha=0.5) +
@@ -184,8 +122,6 @@ small_p4 <-ggplot(df_rho_all,
   ylab("Estimation") +
   xlab("True Effect Size Correlation") +
   theme_sim() 
-
-2*pnorm((0.963-0.99)/(0.0234/1.96))
 
 load("./data/df_r2twas.RData")
 

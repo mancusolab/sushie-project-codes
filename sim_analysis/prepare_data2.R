@@ -5,7 +5,7 @@ library(ggpubr)
 
 # to replicate our figures you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Downloads/sushie_sim_data_results"
+sim_data_path <- "~/Downloads/sushie_sim_data_results/"
 
 # 2 pop general data
 df_pip_pop2_tmp <- read_tsv(glue("{sim_data_path}/sushie_2pop_pip_all.tsv.gz"))
@@ -40,7 +40,7 @@ pp_auprc <- df_auprc %>%
       "Meta-SuSiE", "SuSiE", "SuSiEx", "MESuSiE", 
       "XMAP", "XMAP-IND")))
 
-# write_tsv(pp_auprc, "{sim_data_path}/auprc_data.tsv")
+# write_tsv(pp_auprc, glue("{sim_data_path}/auprc_data.tsv"))
 
 df_cali <- df_pip_pop2_tmp %>%
   select(-susie_ss_pip) %>%
@@ -63,8 +63,7 @@ df_cali <- df_pip_pop2_tmp %>%
       "Meta-SuSiE", "SuSiE", "SuSiEx", "MESuSiE", 
       "XMAP", "XMAP-IND")))
 
-# write_tsv(df_cali, "{sim_data_path}/calibration_data.tsv")
-
+# write_tsv(df_cali, glue("{sim_data_path}/calibration_data.tsv"))
 
 df_tmp1 <- df_pip_pop2_tmp %>%
   select(-susie_ss_pip) %>%
@@ -91,7 +90,7 @@ df_pip_fdr <- df_tmp1 %>%
     if_positive = ifelse(is.na(if_positive), FALSE, if_positive)) %>%
   summarize(value = as.numeric(sum(if_positive) > 0))
 
-# write_tsv(df_pip_fdr, "{sim_data_path}/fdr_pip_data.tsv")
+# write_tsv(df_pip_fdr, glue("{sim_data_path}/fdr_pip_data.tsv"))
 
 df_cs_pop2_tmp <- read_tsv(glue("{sim_data_path}/sushie_2pop_cs_all.tsv.gz"))
 
@@ -111,4 +110,4 @@ df_cs_fdr <- df_cs_pop2_tmp %>%
   group_by(sim, locus, N, L1, L2, L3, h2g, rho, method) %>%
   summarize(Power = ifelse(is.na(SNPIndex_1based), 0, as.numeric(sum(causal == 1) != 0)))
 
-# write_tsv(df_cs_fdr, "{sim_data_path}/fdr_cs_data.tsv")
+# write_tsv(df_cs_fdr, glue("{sim_data_path}/fdr_cs_data.tsv"))

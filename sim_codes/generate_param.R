@@ -31,7 +31,7 @@ N <- "400:400"
 L1 <- 2
 L2 <- 2
 L3 <- 0
-h2g <- c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2")
+h2g <- c("0:0", "0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2")
 rho <- "0.8"
 tt3 <- crossing(N, L1, L2, L3, h2g, rho)
 
@@ -101,26 +101,6 @@ dd1 <- tt %>%
   left_join(gene_list, by = "LOCUS")
 
 write_tsv(dd1, file="./param/param_2pop.tsv", col_names = FALSE, escape = "none")
-
-N <- "2000:2000"
-L1 <- 2
-L2 <- 2
-L3 <- 0
-h2g <- "0.05:0.05"
-rho <- "0.8"
-tt1 <- crossing(N, L1, L2, L3, h2g, rho)
-
-tt <- tt1 %>%
-  distinct() %>%
-  rownames_to_column("ROW") 
-
-dd1 <- tt %>%
-  left_join(crossing(ROW = tt$ROW, LOCUS = 1:500),
-    by = "ROW") %>%
-  mutate(seed = row_number() + 100) %>%
-  left_join(gene_list, by = "LOCUS")
-
-write_tsv(dd1, file="./param/param_time.tsv", col_names = FALSE, escape = "none")
 
 # 3 pop
 N <- c("450", "900", "1350")

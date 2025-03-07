@@ -1,9 +1,9 @@
 #!/bin/bash
 salloc --time=12:00:00 --mem=16G --partition=conti
-out=~/data/sushie/sim3
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_2pop/sushie
-for type in pip
+for type in pip cs rho sens
 do
   echo $type
   rm -rf ${out}/sushie_2pop_${type}.tsv.gz
@@ -12,6 +12,7 @@ do
   gzip ${out}/sushie_2pop_${type}.tsv
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_2pop/susiex
 for ld in "in"
 do
@@ -25,6 +26,7 @@ do
   done
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_2pop/mesusie
 for ld in "in"
 do
@@ -49,6 +51,8 @@ do
   done
 done
 
+out=~/data/sushie/sim4
+cd /scratch1/zeyunlu/sushie_sim_2pop/xmap
 for ld in "in" "ind"
 do
   for type in cs pip rho sens
@@ -61,7 +65,7 @@ do
   done
 done
 
-
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_noshared/sushie
 for type in fdr rho pip
 do
@@ -72,6 +76,7 @@ do
   gzip ${out}/sushie_noshared_${type}.tsv
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_noshared/susiex
 for type in fdr pip
 do
@@ -82,6 +87,7 @@ do
   gzip ${out}/susiex.in_noshared_${type}.tsv
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_noshared/xmap
 # check which files selected as initial
 for idx in `seq 1 500`
@@ -93,6 +99,7 @@ do
   done
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_noshared/xmap
 for method in "in" "ind"
 do
@@ -106,6 +113,7 @@ do
   done
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_noshared/mesusie
 for method in "in"
 do
@@ -119,6 +127,7 @@ do
   done
 done
 
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_pred
 for type in r2 twas
 do
@@ -129,7 +138,7 @@ do
   gzip ${out}/sim_pred_${type}.tsv
 done
 
-
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_3pop
 for type in cs pip
 do
@@ -141,9 +150,9 @@ do
 done
 
 # new simulations
-out=~/data/sushie/sim3
-cd /scratch1/zeyunlu/rho_files/
-for type in rho
+out=~/data/sushie/sim4
+cd /scratch1/zeyunlu/sushie_sim_2pop_2/
+for type in pip cs rho
 do
   echo $type
   rm -rf ${out}/sushie_2pop_${type}_all.tsv.gz
@@ -152,9 +161,8 @@ do
   gzip ${out}/sushie_2pop_${type}_all.tsv
 done
 
-out=~/data/sushie/sim3
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_sim_fst/
-
 for type in fst ld
 do
   rm -rf ${out}/sim_causal_${type}.tsv.gz
@@ -162,17 +170,13 @@ do
   gzip ${out}/sim_causal_${type}.tsv
 done
 
-
-out=~/data/sushie/sim3
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/tmp_gene_fst/
-
 rm -rf ${out}/sim_gene_fst.tsv.gz
 cat *.tsv > ${out}/sim_gene_fst.tsv
 gzip ${out}/sim_gene_fst.tsv
 
-
-
-out=~/data/sushie/sim3
+out=~/data/sushie/sim4
 cd /scratch1/zeyunlu/sushie_rnaseq/fst2
 
 echo $type
@@ -180,6 +184,4 @@ rm -rf ${out}/sushie_real_fst.tsv.gz
 head -1 ENSG00000284594_MIR7847_all_snp.fst.summary > ${out}/sushie_real_fst.tsv
 find . -name "*.summary" | xargs -n 1 tail -n +2 >> ${out}/sushie_real_fst.tsv
 gzip ${out}/sushie_real_fst.tsv
-
-
 

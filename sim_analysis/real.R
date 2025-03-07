@@ -3,8 +3,8 @@ library(broom)
 
 # to replicate our figures you need to download the data from the zenodo link
 # and point it to simulation data paht
-real_data_path <- "~/Downloads/sushie_real_data_results/all_results"
-meta_data_path <- "~/Downloads/sushie_real_data_results/metadata"
+real_data_path <- "~/Downloads/sushie_real_data_results/all_results/"
+meta_data_path <- "~/Documents/sushie_real_data_results/metadata/"
 
 df_snps <- read_tsv(glue("{real_data_path}/rnaseq_normal.sushie_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%

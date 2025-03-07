@@ -8,10 +8,16 @@ out <- args[2]
 out2 <- args[3]
 load(f_rdata)
 
+if (L3 == 0) {
+  ans_weights <- c(0, 0, 1)
+} else {
+  ans_weights <- c(L3, L3, L1)
+}
+
 # run MESuSiE
 mesusie_res <- tryCatch({
   mesusie_res <- MESuSiE::meSuSie_core(ld_list,ss_list, L=L2,
-    ancestry_weight = c(0, 0, 1),
+    ancestry_weight = ans_weights,
     estimate_residual_variance =TRUE, max_iter =500)
   mesusie_res
 }, error = function(e) {

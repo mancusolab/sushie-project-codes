@@ -1,4 +1,5 @@
 library(tidyverse)
+library(glue)
 library(broom)
 
 # 2 pop general data
@@ -6,7 +7,7 @@ load("./data/df_2pop.RData")
 
 # to replicate our analysis you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Downloads/sushie_sim_data_results"
+sim_data_path <- "~/Downloads/sushie_sim_data_results/"
 
 # gene-level LD 
 tmp_df_gene_ld <- read_tsv(glue("{sim_data_path}/sim_gene_ld.tsv.gz"))
@@ -71,7 +72,7 @@ for (method_name in c("SuShiE", "SuShiE-Indep", "Meta-SuSiE",
 res_gene_ld %>%
   filter(metric %in% "levene_stats") %>%
   filter(name %in% "SuShiE")
-0.0175/2
+
 res_gene_ld %>%
   filter(metric %in% "l2_diff") %>%
   filter(name %in% "SuShiE")
@@ -86,32 +87,42 @@ res_gene_ld %>%
 res_gene_ld %>%
   filter(metric %in% "anova_stats") %>%
   filter(name %in% "SuShiE")
-0.0871/2
+
+res_gene_ld %>%
+  filter(metric %in% "levene_stats") %>%
+  filter(name %in% "SuShiE")
 
 df_causal_fst <- read_tsv(glue("{sim_data_path}/sim_causal_fst.tsv.gz"),
   col_names = FALSE) %>%
   select(locus = X3, sim = X2, fst = X1)
 
+df_tmp <- df_2pop %>%
+  filter(N %in% c("400:400")) %>%
+  filter(L1 == L2 & L3 == 0 & L1 == 2) %>%
+  filter(h2g %in% "0.05:0.05" & rho == "0.8") %>%
+  left_join(df_causal_fst, by = c( "sim", "locus"))
+
+fst_group <- df_tmp %>%
+  distinct(sim, locus, fst) 
+
+fst_group %>%
+  filter(fst >= 0.15) 
+
+fst_group %>%
+  filter(fst <=0.05)
+
+low_fst_group <- fst_group %>%
+  filter(fst >= 0.15) %>%
+  pull(locus)
+
+high_fst_group <- fst_group %>%
+  filter(fst <=0.05) %>%
+  pull(locus)
+
 res_causal_fst <- tibble()
 for (method_name in c("SuShiE", "SuShiE-Indep", "Meta-SuSiE",
   "SuSiE", "SuSiEx", "MESuSiE", "XMAP", "XMAP-IND")) {
   for (metric_name in unique(df_gene_ld$name)) {
-    df_tmp <- df_2pop %>%
-      filter(N %in% c("400:400")) %>%
-      filter(L1 == L2 & L3 == 0 & L1 == 2) %>%
-      filter(h2g %in% "0.05:0.05" & rho == "0.8") %>%
-      left_join(df_causal_fst, by = c( "sim", "locus"))
-    
-    fst_group <- df_tmp %>%
-      distinct(sim, locus, fst) 
-    
-    low_fst_group <- fst_group %>%
-      filter(fst >= 0.15) %>%
-      pull(locus)
-    
-    high_fst_group <- fst_group %>%
-      filter(fst <=0.05) %>%
-      pull(locus)
     
     df_tmp1 <- df_2pop %>%
       filter(N %in% c("400:400")) %>%
@@ -202,7 +213,26 @@ df_fst <- tmp_df_fst %>%
       left_join(df_param) %>%
       sample_n(nrow(tmp_df_fst)) %>%
       mutate(method = "Sim Data from 1000G") %>%
-      select(method, fst))
+      select(method, fst)) %>%
+  mutate(method = factor(method,
+    levels = c("Sim Data from 1000G",
+      "Real Data from TOPMed MESA mRNA"),
+    labels = c("Simulated cis-molQTLs from 1000G",
+      "Putative cis-eQTLs from TOPMed MESA mRNA")))
+
+df_fst %>%
+  group_by(method) %>%
+  summarize(mval = mean(fst))
+
+ffont <- "sans"
+fontsize <- 7
+legend_fontsize <- 7
+errbar_width <- 0.5
+scaleFUN <- function(x) sprintf("%.2f", x)
+
+p_width <- 7.08
+p_height <- 2.5
+point_size <- 1.5
 
 ggplot(df_fst, aes(x = fst)) +
   geom_histogram(binwidth = 0.01, fill = "blue", alpha = 0.6, color = "black") +

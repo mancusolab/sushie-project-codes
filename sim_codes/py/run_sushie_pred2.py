@@ -86,9 +86,9 @@ def main(args):
 
     # Read the TSV file into a DataFrame
     df_sushie = pd.read_csv(args.sushie_file, sep="\t")
-    pop1_weight.append(jnp.array(df_sushie)[:, 0:10])
-    pop2_weight.append(jnp.array(df_sushie)[:, 10:20])
-    method_name.append(["sushie", "indep", "meta", "susie", "sushie_ss", "enet", "lasso", "ridge", "multisusie.ss", "multisusie.ind"])
+    pop1_weight.append(jnp.array(df_sushie)[:, 0:8])
+    pop2_weight.append(jnp.array(df_sushie)[:, 8:16])
+    method_name.append(["sushie", "indep", "meta", "susie", "sushie_ss", "enet", "lasso", "ridge"])
 
     df_mesusie_in = pd.read_csv(args.mesusie_in_file, sep="\t", header=None)
     pop1_weight.append(jnp.array(df_mesusie_in)[:, 0][:, jnp.newaxis])

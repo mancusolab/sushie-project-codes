@@ -15,7 +15,6 @@ causal_file <- args[4]
 out <- args[5]
 L2 <- as.numeric(args[6])
 
-
 # rho
 # sushie
 df_rho_sushie <- read_tsv(glue("{prefix}/other.sushie.sim{sim}.locus{locus}.rho.tsv"))
@@ -73,9 +72,9 @@ if (file.exists(mesusie_rho_path)) {
 
 write_tsv(df_rho_sushie, glue("{out}/sim{sim}.locus{locus}.rho.tsv"))
 
-# # susiex
-# susiex_cs <- glue("{prefix}/susiex.in.sim{sim}.locus{locus}.cs")
-# susiex_snp <- glue("{prefix}/susiex.in.sim{sim}.locus{locus}.snp")
+# susiex
+susiex_cs <- glue("{prefix}/susiex.in.sim{sim}.locus{locus}.cs")
+susiex_snp <- glue("{prefix}/susiex.in.sim{sim}.locus{locus}.snp")
 
 # pip
 # sushie

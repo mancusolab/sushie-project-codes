@@ -8,7 +8,6 @@ from jax.config import config
 from sushie.infer import infer_sushie
 from sushie.infer_ss import infer_sushie_ss
 import numpy as np
-import MultiSuSiE
 
 import helper_function as hf
 
@@ -115,22 +114,6 @@ def main(args):
                            "BP2": [jnp.min(new_snps2.pos.values), jnp.max(new_snps2.pos.values)]})
     df_met.to_csv(f"{args.tmp_output}.md.sim{args.sim}.locus{args.locus}.tsv", index=False, sep="\t", header=None)
 
-    # perform multisusie
-    multisusie1_converged = True
-    try:
-        multisusie1 = MultiSuSiE.multisusie_rss(z_list=[np.array(ss_list[0].z.values), np.array(ss_list[1].z.values)],
-                                                R_list=output_dic["trueLD"][0:2], rho=np.array([[1, 0.75], [0.75, 1]]),
-                                                population_sizes=N, L=args.L2, max_iter=500, tol=0.0001,
-                                                min_abs_corr=0.5)
-    except Exception as e:
-        multisusie1_converged = False
-
-    multisusie2_converged = True
-    try:
-        multisusie2 = MultiSuSiE.multisusie(X_list=[np.array(X[0]), np.array(X[1])], Y_list=[np.array(y[0]), np.array(y[1])], rho=np.array([[1, 0.1], [0.1, 1]]), L=args.L2,standardize=True,intercept=False,float_type=np.float64)
-    except Exception as e:
-        multisusie2_converged = False
-
     # perform sushie
     sushie = infer_sushie(Xs=X, ys=y, L=args.L2, threshold=0.95)
     indep = infer_sushie(Xs=X, ys=y, L=args.L2, rho=[0], no_update=True, threshold=0.95)
@@ -167,32 +150,6 @@ def main(args):
 
     meta_cs = pd.concat([new_meta1_cs, new_meta2_cs], axis=0).drop_duplicates(subset="SNPIndex")
 
-    multisusie1_cs = []
-    multisusie2_cs = []
-    for idx in range(args.L2):
-        if multisusie1_converged and multisusie1.sets[3][idx]:
-            multisusie1_cs.append(pd.DataFrame({"CSIndex": idx + 1, "SNPIndex": multisusie1.sets[0][idx]}))
-        else:
-            multisusie1_cs.append(pd.DataFrame({"CSIndex": [], "SNPIndex": []}))
-
-        if multisusie2_converged and multisusie2.sets[3][idx]:
-            multisusie2_cs.append(pd.DataFrame({"CSIndex": idx + 1, "SNPIndex": multisusie2.sets[0][idx]}))
-        else:
-            multisusie2_cs.append(pd.DataFrame({"CSIndex": [], "SNPIndex": []}))
-
-    multisusie1_cs = pd.concat(multisusie1_cs, axis=0)
-    multisusie2_cs = pd.concat(multisusie2_cs, axis=0)
-
-    if multisusie1_converged:
-        multisusie1_fdr = len(multisusie1_cs.CSIndex.unique())
-    else:
-        multisusie1_fdr = jnp.nan
-
-    if multisusie2_converged:
-        multisusie2_fdr = len(multisusie2_cs.CSIndex.unique())
-    else:
-        multisusie2_fdr = jnp.nan
-
     # pip
     df_pip = pd.DataFrame()
     df_pip["SNPIndex_0based"] = g
@@ -209,58 +166,29 @@ def main(args):
     df_pip["sushie_ss_pip"] = sushie_ss.pip_all[g]
     df_pip["sushie_ss_cali"] = jnp.isin(g, sushie_ss.cs.SNPIndex.values.astype(int)).astype(int)
 
-    if multisusie1_converged:
-        multisusie1_pip = hf.make_pip(multisusie1.alpha)
-        df_pip["multisusie.ss_pip"] = multisusie1_pip[g]
-        df_pip["multisusie.ss_cali"] = jnp.isin(g, multisusie1_cs.SNPIndex.values.astype(int)).astype(int)
-        multisusie1_pip_snp = (multisusie1_pip > 0.95).sum()
-        multisusie1_pip_as = (multisusie1_pip[g] > 0.95).sum()
-    else:
-        df_pip["multisusie.ss_pip"] = jnp.nan
-        df_pip["multisusie.ss_cali"] = jnp.nan
-        multisusie1_pip_snp = jnp.nan
-        multisusie1_pip_as = jnp.nan
-
-    if multisusie2_converged:
-        multisusie2_pip = hf.make_pip(multisusie2.alpha)
-        df_pip["multisusie.ind_pip"] = multisusie2_pip[g]
-        df_pip["multisusie.ind_cali"] = jnp.isin(g, multisusie2_cs.SNPIndex.values.astype(int)).astype(int)
-        multisusie2_pip_snp = (multisusie2_pip > 0.95).sum()
-        multisusie2_pip_as = (multisusie2_pip[g] > 0.95).sum()
-
-    else:
-        df_pip["multisusie.ind_pip"] = jnp.nan
-        df_pip["multisusie.ind_cali"] = jnp.nan
-        multisusie2_pip_snp = jnp.nan
-        multisusie2_pip_as = jnp.nan
-
     df_pip = add_annotation(df_pip, args)
     df_pip.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.pip.tsv", sep="\t", index=False)
 
     fdr_cs = [len(sushie.cs.CSIndex.unique()), len(indep.cs.CSIndex.unique()),
               meta_cs.drop_duplicates(subset=["CSIndex", "ancestry"]).shape[0], len(susie.cs.CSIndex.unique()),
-              len(sushie_ss.cs.CSIndex.unique()),
-              multisusie1_fdr, multisusie2_fdr]
+              len(sushie_ss.cs.CSIndex.unique())]
 
     as_pos = [len(sushie.cs[np.array(np.isin(sushie.cs.SNPIndex.values.astype(int), g))].CSIndex.unique()),
               len(indep.cs[np.array(np.isin(indep.cs.SNPIndex.values.astype(int), g))].CSIndex.unique()),
               meta_cs[np.array(np.isin(meta_cs.SNPIndex.values.astype(int), g))].drop_duplicates(subset=["CSIndex", "ancestry"]).shape[0],
               len(susie.cs[np.array(np.isin(susie.cs.SNPIndex.values.astype(int), g))].CSIndex.unique()),
-              len(sushie_ss.cs[np.array(np.isin(sushie_ss.cs.SNPIndex.values.astype(int), g))].CSIndex.unique()),
-              len(multisusie1_cs[np.array(np.isin(multisusie1_cs.SNPIndex.values.astype(int), g))].CSIndex.unique()),
-              len(multisusie2_cs[np.array(np.isin(multisusie2_cs.SNPIndex.values.astype(int), g))].CSIndex.unique())]
+              len(sushie_ss.cs[np.array(np.isin(sushie_ss.cs.SNPIndex.values.astype(int), g))].CSIndex.unique())]
 
     high_pip_snp = [(sushie.pip_all > 0.95).sum(), (indep.pip_all > 0.95).sum(),
                     ((1 - (1 - meta1.pip_all) * (1 - meta2.pip_all)) > 0.95).sum(), (susie.pip_all > 0.95).sum(),
-                    (sushie_ss.pip_all > 0.95).sum(), multisusie1_pip_snp, multisusie2_pip_snp]
+                    (sushie_ss.pip_all > 0.95).sum()]
 
     high_pip_snp_as = [(sushie.pip_all[g] > 0.95).sum(), (indep.pip_all[g] > 0.95).sum(),
                        ((1 - (1 - meta1.pip_all) * (1 - meta2.pip_all))[g] > 0.95).sum(), (susie.pip_all[g] > 0.95).sum(),
-                       (sushie_ss.pip_all[g] > 0.95).sum(),
-                       multisusie1_pip_as, multisusie2_pip_as]
+                       (sushie_ss.pip_all[g] > 0.95).sum()]
 
     df_fdr = pd.DataFrame(data={
-        "method": ["sushie", "indep", "meta", "susie", "sushie_ss", "multisusie.ss", "multisusie.ind"],
+        "method": ["sushie", "indep", "meta", "susie", "sushie_ss"],
         "fdr_cs": fdr_cs,
         "as_in": as_pos,
         "fdr_high": high_pip_snp,

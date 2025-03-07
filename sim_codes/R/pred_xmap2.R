@@ -6,7 +6,6 @@ f_rdata <- args[1]
 out <- args[2]
 load(f_rdata)
 
-
 xmap_res <- tryCatch({
   fit_step1 <- XMAP::estimate_gc(
     data.frame(Z = df_ss1$Z[keep_idx], N = df_ss1$N[keep_idx]),

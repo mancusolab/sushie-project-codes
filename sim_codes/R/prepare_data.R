@@ -15,6 +15,8 @@ L2 <- as.numeric(args[10])
 sim <- args[11]
 locus <- args[12]
 out <- args[13]
+L3 <- as.numeric(args[14])
+L1 <- as.numeric(args[15])
 
 df_causal <- read_tsv(causal)
 num_N <- as.numeric(unlist(stringr::str_split(N, ":")))
@@ -78,5 +80,5 @@ total_df_ld <- num_N[1]/sum(num_N) * df_ld1 + num_N[2]/sum(num_N) * df_ld2
 
 save(df_ss1, df_ss2, df_ld1, df_ld2, df_ldscore,
   df_x1, df_x2, df_y1, df_y2, ld_w1, ld_w2, ss_list, ld_list,
-  num_N, L2, sim, locus, df_causal, keep_idx, total_df_ld,
+  num_N, L2, L3, L1, sim, locus, df_causal, keep_idx, total_df_ld,
   file = out)

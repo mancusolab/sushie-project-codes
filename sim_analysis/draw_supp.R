@@ -1,11 +1,12 @@
 library(tidyverse)
+library(glue)
 library(ggpubr)
 library(broom)
 library(RColorBrewer)
 
 # to replicate our figures you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Downloads/sushie_sim_data_results"
+sim_data_path <- "~/Downloads/sushie_sim_data_results/"
 
 ffont <- "sans"
 fontsize <- 9
@@ -96,15 +97,8 @@ df_tmp <- df_3pop %>%
 s_p1 <- pp(df_tmp, "N", "molQTL Sample Size", colors_type = pop3_colors)
 
 # ggsave("./manuscript_plots/supp/s1.png", width = p_width, height = p_height+0.5)
-load("./data/df_2pop.RData")
 
-df_2pop %>%
-  filter(h2g == "0:0" & type == "CS") %>%
-  distinct(name, locus) %>%
-  group_by(name) %>%
-  summarize(n = n()) %>%
-  mutate(prop = n / 500,
-    z = (prop - 0.01) / sqrt(0.01 * (1 - 0.01) / 500))
+load("./data/df_2pop.RData")
 
 general_sim1 <- function(tt1, ylab, colors_type = method_colors) {
   p2tmp <- tt1 %>%
@@ -280,18 +274,11 @@ pp(tt2, "h2g", "cis-SNP h2g for 2nd Ancestry")
 # ggsave("./manuscript_plots/supp/s6.png", width = p_width, height = p_height+0.5)
 
 # rho
-tmp_rho <- read_tsv(glue("{sim_data_path}sushie_2pop_rho.tsv.gz"))
-
-sushie_cs_pop2 <- read_tsv(glue("{sim_data_path}/sushie_2pop_cs.tsv.gz"))
-
-all_sim1 <- sushie_cs_pop2 %>%
-  filter(N %in% "400:400" & L1 == L2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
-  filter(!is.na(sushie)) %>%
-  distinct(sim, locus)
+tmp_rho <- read_tsv(glue("{sim_data_path}/sushie_2pop_rho.tsv.gz"))
 
 df_rho1 <- tmp_rho %>%
-  filter(method %in% "sushie") %>%
-  inner_join(all_sim1, by = c("sim", "locus"))
+  filter(N %in% "400:400" & L1 == L2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05") %>%
+  filter(method %in% "sushie")
 
 rho_11 <- df_rho1 %>%
   group_by(sim, rho) %>%
@@ -328,14 +315,10 @@ p_rho1 <- ggplot(rho_all1,
   xlab("True Effect Size Correlation") +
   theme_sim() 
 
-all_sim2 <- sushie_cs_pop2 %>%
-  filter(N %in% c("400:400", "1200:1200", "2400:2400") & L1 == L2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05" & rho == 0.8) %>%
-  filter(!is.na(sushie)) %>%
-  distinct(sim, locus)
-
 df_rho2 <- tmp_rho %>%
-  filter(method %in% "sushie") %>%
-  inner_join(all_sim2, by = c("sim", "locus"))
+  filter(N %in% c("400:400", "1200:1200", "2400:2400")
+    & L1 == L2 & L1 ==2 & L3==0 & h2g %in% "0.05:0.05" & rho == 0.8) %>%
+  filter(method %in% "sushie")
 
 rho_21 <- df_rho2 %>%
   group_by(sim, N) %>%
@@ -387,6 +370,7 @@ p_rho2 <- ggplot(rho_all2,
 
 ggarrange(p_rho1, p_rho2, ncol = 2, labels = c("A", "B"),
   common.legend = TRUE, legend = "bottom")
+
 # ggsave("./manuscript_plots/supp/s7.png", width = 5, height = 3)
 
 tt3 <- df_2pop %>%
@@ -615,7 +599,7 @@ df_twas_h2ge <- df_r2twas %>%
   summarize(mvalue = mean(value),
     se = 1.96 * sqrt(sd(value) / n())) %>%
   mutate(h2ge = factor(case_when(
-      h2ge == unique(tmp_twas$h2ge)[2] ~ "6e-5",
+      h2ge == 0.00006 ~ "6e-5",
       h2ge == 0.00015 ~ "1.5e-4",
       h2ge == 0.00030 ~ "3e-4",
       h2ge == 0.0006 ~ "6e-4",

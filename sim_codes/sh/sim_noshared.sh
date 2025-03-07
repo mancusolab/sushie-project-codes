@@ -1,10 +1,9 @@
 #!/bin/bash
-#SBATCH --time=03:00:00
+#SBATCH --time=06:00:00
 #SBATCH --mem=6Gb
 #SBATCH --array=1-1500
 #SBATCH --mail-type=all
 #SBATCH --mail-user=zeyunlu@usc.edu
-#SBATCH --partition=conti
 
 if [ ! $SLURM_ARRAY_TASK_ID ]; then
   NR=$1
@@ -18,6 +17,7 @@ fi
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
+module load legacy/CentOS7
 module load gcc/8.3.0
 module load openblas/0.3.8
 module load r/4.1.0
@@ -117,7 +117,7 @@ do
     ${tmp_output}.xy.sim${row}.locus${locus}.ans1.tsv \
     ${tmp_output}.inldsc.sim${row}.locus${locus}.tsv \
     ${tmp_output}.causal.sim${row}.locus${locus}.tsv \
-    $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata
+    $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata $L3 $L1
 
   # run xmap and mesusie
   Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/noshared_mesusie.R \

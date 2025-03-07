@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=06:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mem=24Gb
 #SBATCH --array=1-220
 #SBATCH --mail-type=all
@@ -15,6 +15,7 @@ fi
 source /home1/zeyunlu/init.sh
 conda activate jax2
 
+module load legacy/CentOS7
 module load gcc/8.3.0
 module load openblas/0.3.8
 module load r/4.1.0
@@ -83,7 +84,7 @@ do
     ${tmp_output}.xy.sim${row}.locus${locus}.ans1.tsv \
     ${tmp_output}.inldsc.sim${row}.locus${locus}.tsv \
     ${tmp_output}.causal.sim${row}.locus${locus}.tsv \
-    $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata
+    $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata $L3 $L1
 
   # run xmap and mesusie
   Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/pred_mesusie.R \
@@ -99,23 +100,23 @@ do
     ${tmp_output}.xmap.ind.sim${row}.locus${locus}.tsv
 
   python /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/py/run_sushie_pred2.py \
-  ${eur1}:${afr1}:${eur2}:${afr2} \
-  --N $N \
-  --L1 $L1 \
-  --L2 $L2 \
-  --L3 $L3 \
-  --h2g $h2g \
-  --rho $rho \
-  --ngwas $ngwas \
-  --h2ge $h2ge \
-  --sim $row \
-  --locus $locus \
-  --seed $seed \
-  --sushie_file ${tmp_output}.weights.sim${row}.locus${locus}.tsv \
-  --mesusie_in_file ${tmp_output}.mesusie.in.sim${row}.locus${locus}.tsv \
-  --xmap_in_file ${tmp_output}.xmap.in.sim${row}.locus${locus}.tsv \
-  --xmap_ind_file ${tmp_output}.xmap.ind.sim${row}.locus${locus}.tsv \
-  --output $OUT/pred.sim${row}.locus${locus}
+    ${eur1}:${afr1}:${eur2}:${afr2} \
+    --N $N \
+    --L1 $L1 \
+    --L2 $L2 \
+    --L3 $L3 \
+    --h2g $h2g \
+    --rho $rho \
+    --ngwas $ngwas \
+    --h2ge $h2ge \
+    --sim $row \
+    --locus $locus \
+    --seed $seed \
+    --sushie_file ${tmp_output}.weights.sim${row}.locus${locus}.tsv \
+    --mesusie_in_file ${tmp_output}.mesusie.in.sim${row}.locus${locus}.tsv \
+    --xmap_in_file ${tmp_output}.xmap.in.sim${row}.locus${locus}.tsv \
+    --xmap_ind_file ${tmp_output}.xmap.ind.sim${row}.locus${locus}.tsv \
+    --output $OUT/pred.sim${row}.locus${locus}
 
   rm -rf $TMPDIR
 done

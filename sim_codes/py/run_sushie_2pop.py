@@ -137,6 +137,14 @@ def main(args):
     lds = jnp.stack(output_dic["trueLD"][0:2], axis=0)
     sushie_ss = infer_sushie_ss(zs=z_ss, lds=lds, ns=jnp.array(N)[:, jnp.newaxis], L=args.L2, threshold=0.95)
 
+    df_sens = pd.DataFrame({"sushie": [1 * sushie.elbo_increase],
+                            "indep": [1 * indep.elbo_increase],
+                            "meta": [1 * (meta1.elbo_increase and meta2.elbo_increase)],
+                            "susie": [1 * susie.elbo_increase],
+                            "susie_ss": [1 * sushie_ss.elbo_increase]})
+
+    df_sens = add_annotation(df_sens, args)
+    df_sens.to_csv(f"{args.output}.sim{args.sim}.locus{args.locus}.sens.tsv", sep="\t", index=False)
 
     # track est_rho
     covar1 = jnp.transpose(sushie.posteriors.weighted_sum_covar)[0, 0]

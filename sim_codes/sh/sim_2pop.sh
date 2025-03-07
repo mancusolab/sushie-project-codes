@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --time=06:00:00
 #SBATCH --mem=4Gb
-#SBATCH --array=1-1300
+#SBATCH --array=1-1350
 #SBATCH --mail-type=all
 #SBATCH --mail-user=zeyunlu@usc.edu
 
@@ -11,8 +11,6 @@ if [ ! $SLURM_ARRAY_TASK_ID ]; then
 else
   NR=$SLURM_ARRAY_TASK_ID
 fi
-
-# 13000 = 520 * 25
 
 source /home1/zeyunlu/init.sh
 conda activate jax2
@@ -27,7 +25,7 @@ DATAF=/project/nmancuso_8/data/sushie/analysis_results/sushie_sim_genes/
 start=`python -c "print( 1 + 10 *int(int($NR-1)))"`
 stop=$((start + 9))
 
-for IDX in `seq $start $stop`
+for IDX in `seq $start $stop` 
 do
   params=`sed "${IDX}q;d" /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/param/param_2pop.tsv`
   echo "NR=${IDX}: ${params}"
@@ -119,7 +117,7 @@ do
     ${tmp_output}.xy.sim${row}.locus${locus}.ans1.tsv \
     ${tmp_output}.inldsc.sim${row}.locus${locus}.tsv \
     ${tmp_output}.causal.sim${row}.locus${locus}.tsv \
-    $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata
+    $N $L2 ${row} ${locus} ${tmp_output}.in.sim${row}.locus${locus}.rdata $L3 $L1
 
   # run xmap and mesusie
   Rscript /project/nmancuso_8/zeyunlu/projects/sushie-data-codes/sim_codes/R/run_mesusie.R \

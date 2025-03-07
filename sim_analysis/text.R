@@ -1,5 +1,8 @@
 library(tidyverse)
 library(broom)
+library(glue)
+
+sim_data_path <- "~/Downloads/sushie_sim_data_results/"
 
 other_methods <- c("SuShiE-Indep",
   "Meta-SuSiE", "SuSiE", "SuSiEx", "MESuSiE", 
@@ -86,7 +89,8 @@ df_sens <- sushie_sens_pop2 %>%
     levels = c("sushie", "mesusie", "xmap", "xmap_ind", "susiex"),
     labels = c("SuShiE", "MESuSiE", "XMAP", "XMAP-IND", "SuSiEx"))) %>%
   arrange(name)
-(0.257 + 0.265)/2
+
+(0.255 + 0.261)/2
 # write_tsv(df_sens, "./manuscript_plots/s2.tsv")
 
 # 2 pop general data
@@ -110,8 +114,7 @@ comp_methods <- function(df, method, type_name) {
 df_tmp <- df_2pop %>%
   filter(N %in% c("200:200", "400:400", "600:600", "800:800") &
       L1 == L2 & L3 == 0 &
-      h2g %in% c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2") & 
-      rho %in% c("0.01", "0.4", "0.8", "0.99")) %>%
+      h2g %in% c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2")) %>%
   mutate(N = case_when(
     N == "200:200" ~ 200,
     N == "400:400" ~ 400,
@@ -216,7 +219,7 @@ df_tmp <- df_2pop %>%
   filter(N %in% c("200:200", "400:400", "600:600", "800:800") &
       L1 == L2 & L3 == 0 &
       h2g %in%  "0.05:0.05" & 
-      rho %in%  "0.8") %>%
+      rho %in%  0.8) %>%
   mutate(N = case_when(
     N == "200:200" ~ 200,
     N == "400:400" ~ 400,
@@ -262,14 +265,13 @@ cp_res %>%
 df_tmp <- df_2pop %>%
   filter(N %in% "400:400" &
       L1 == L2 & L3 == 0 &
-      h2g %in% c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2") & 
-      rho %in% c("0.01", "0.4", "0.8", "0.99")) %>%
+      h2g %in% c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2")) %>%
   mutate(h2g = case_when(
     h2g == "0.01:0.01" ~ 0.01,
     h2g == "0.05:0.05" ~ 0.05,
     h2g == "0.1:0.1" ~ 0.1,
     h2g == "0.2:0.2" ~ 0.2)) %>%
-  select(-L3, -L2, -N) 
+  select(-L3, -L2, -N, -rho) 
 
 cp_res <- tibble()
 for (other_method in other_methods) {
@@ -305,6 +307,7 @@ cp_res %>%
     p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
 
+# differet N
 df_tmp <- df_2pop %>%
   filter(L1 == 2 & L2 ==2 & L3 == 0 & h2g == "0.05:0.05" & rho == 0.8) %>%
   filter(N %in% c("400:200", "400:400", "400:600", "400:800")) %>%
@@ -351,6 +354,7 @@ cp_res %>%
     se = sqrt(1/sum(weight)),
     p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
+# different h2g
 
 df_tmp <- df_2pop %>%
   filter(N == "400:400" & L1 == 2 & L2 ==2 & L3 == 0 & rho == 0.8) %>%
@@ -399,7 +403,7 @@ cp_res %>%
 # additional AS QTL
 df_tmp <- df_2pop %>%
   filter(N == "400:400" & L2 == 2 &  L1 ==2  &
-      rho == 0.8 & h2g == "0.05:0.05" & L3 != 3) %>%
+      rho == 0.8 & h2g == "0.05:0.05") %>%
   select(-h2g, -L2, -L1, -N, -rho) 
 
 cp_res <- tibble()

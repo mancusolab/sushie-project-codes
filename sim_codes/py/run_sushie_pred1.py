@@ -9,7 +9,6 @@ from sushie.infer import infer_sushie
 from sushie.infer_ss import infer_sushie_ss
 from jax import random
 import helper_function as hf
-import MultiSuSiE
 
 config.update("jax_enable_x64", True)
 
@@ -159,34 +158,6 @@ def main(args):
     lds = jnp.stack(output_dic["trueLD"][0:2], axis=0)
     sushie_ss = infer_sushie_ss(zs=z_ss, lds=lds, ns=jnp.array(N)[:, jnp.newaxis], L=args.L2, threshold=0.95)
     sushie_ss_weight = jnp.sum(sushie_ss.posteriors.post_mean, axis=0)
-    multisusie1_converged = True
-    try:
-        multisusie1 = MultiSuSiE.multisusie_rss(z_list=[np.array(ss_list[0].z.values), np.array(ss_list[1].z.values)],
-                                                R_list=output_dic["trueLD"][0:2], rho=np.array([[1, 0.1], [0.1, 1]]),
-                                                population_sizes=N, L=args.L2, max_iter=500, tol=0.0001,
-                                                min_abs_corr=0.5)
-    except Exception as e:
-        multisusie1_converged = False
-
-    multisusie2_converged = True
-    try:
-        multisusie2 = MultiSuSiE.multisusie(X_list=[np.array(X[0]), np.array(X[1])], Y_list=[np.array(y[0]), np.array(y[1])], rho=np.array([[1, 0.1], [0.1, 1]]), L=args.L2,standardize=True,intercept=False,float_type=np.float64)
-    except Exception as e:
-        multisusie2_converged = False
-
-    if multisusie1_converged:
-        multisusie1_coef_pop1 = multisusie1.coef[0][:, np.newaxis]
-        multisusie1_coef_pop2 = multisusie1.coef[1][:, np.newaxis]
-    else:
-        multisusie1_coef_pop1 = np.zeros((snps.shape[0], 1))
-        multisusie1_coef_pop2 = np.zeros((snps.shape[0], 1))
-
-    if multisusie2_converged:
-        multisusie2_coef_pop1 = multisusie2.coef[0][:, np.newaxis]
-        multisusie2_coef_pop2 = multisusie2.coef[1][:, np.newaxis]
-    else:
-        multisusie2_coef_pop1 = np.zeros((snps.shape[0], 1))
-        multisusie2_coef_pop2 = np.zeros((snps.shape[0], 1))
 
     pop1_weight = np.concatenate([sushie_weight[:, 0][:, np.newaxis],
                                   indep_weight[:, 0][:, np.newaxis],
@@ -196,8 +167,6 @@ def main(args):
                                   enet1[:, np.newaxis],
                                   lasso1[:, np.newaxis],
                                   ridge1[:, np.newaxis],
-                                  multisusie1_coef_pop1,
-                                  multisusie2_coef_pop1,
                                   ], axis=1)
 
     pop2_weight = np.concatenate([sushie_weight[:, 1][:, np.newaxis],
@@ -208,8 +177,6 @@ def main(args):
                                   enet1[:, np.newaxis],
                                   lasso1[:, np.newaxis],
                                   ridge1[:, np.newaxis],
-                                  multisusie1_coef_pop2,
-                                  multisusie2_coef_pop2,
                                   ], axis=1)
 
     pd.DataFrame(np.concatenate([pop1_weight, pop2_weight], axis=1)).\

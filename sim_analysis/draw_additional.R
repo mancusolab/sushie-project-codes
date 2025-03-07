@@ -5,7 +5,7 @@ library(ggpubr)
 
 # to replicate our figures you need to download the data from the zenodo link
 # and point it to simulation data paht
-sim_data_path <- "~/Downloads/sushie_sim_data_results"
+sim_data_path <- "~/Downloads/sushie_sim_data_results/"
 
 # 2 pop general data
 pp_auprc <- read_tsv(glue("{sim_data_path}/auprc_data.tsv")) %>%
@@ -448,6 +448,23 @@ df_res %>%
     se = sqrt(1/sum(weight)),
     p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
+df_cs_pop2_tmp %>%
+  filter(L1 < L2) %>%
+  filter(L1 == 2) %>%
+  filter(method != "sushie_ss") %>%
+  select(sim, locus, N, L1, L2, L3, h2g, rho, CSIndex, SNPIndex_1based, causal,
+    name = method) %>%
+  filter(!is.na(SNPIndex_1based)) %>%
+  distinct(sim, locus, N, L1, L2, L3, h2g, rho, CSIndex, name) %>%
+  group_by(sim, locus, N, L1, L2, L3, h2g, rho, name) %>%
+  summarize(value = n()) %>%
+  ungroup() %>%
+  filter(value>2) %>%
+  group_by(sim, name) %>%
+  summarize(n = n()) %>%
+  group_by(name) %>%
+  summarize(sum_n = sum(n))
+
 
 # FDR-based power
 tmp_df_pip_fdr <- read_tsv(glue("{sim_data_path}/fdr_pip_data.tsv"))
@@ -665,6 +682,13 @@ for (method_name in c("mesusie", "indep", "meta", "susie", "susiex",
 }
 
 df_res
+
+df_res %>%
+  filter(!grepl("susiex", term)) %>%
+  mutate(weight = 1/(std.error^2)) %>%
+  summarize(weighted_mean = sum(estimate * weight) / sum(weight),
+    se = sqrt(1/sum(weight)),
+    p.value = 2*pnorm(abs(weighted_mean/se), lower.tail = FALSE))
 
 df_res %>%
   filter(!grepl("susiex", term)) %>%
