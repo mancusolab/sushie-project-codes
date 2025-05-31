@@ -80,13 +80,13 @@ main_theme_p1 <- function() {
     panel.background = element_rect(fill = "white"),
     panel.border = element_rect(fill = NA),
     legend.title = element_blank(),
-    legend.text = element_text(face = "bold"),
+    legend.text = element_text(face = "bold", size = 6),
     # legend.position = "none",
     strip.text = element_blank(), # Removes facet labels
     panel.spacing = unit(0.5, "lines"),
     legend.key = element_rect(colour = "transparent", fill = "white"),
-    axis.title=element_text(face="bold", size = 8),
-    axis.text = element_text(face = "bold", size = 9))
+    axis.title=element_text(face="bold", size = 6),
+    axis.text = element_text(face = "bold", size = 7))
 }
 
 mp1 <- ggplot(df_qtl, aes(x=new_n, y=perc_val, fill = study)) +
@@ -273,10 +273,10 @@ enrich_res <- rnaseq_enrich %>%
       "TOPMed-MESA Protein", "GENOA mRNA")))
 
 main1 <- ggarrange(mp1, mp2, mp3, align = "h", nrow=1,
-  labels = c("A", "B", "C"), font.label = list(size = 10),
+  labels = c("a", "b", "c"), font.label = list(size = 10),
   legend.grob =leg, legend = "bottom")
 
-# ggsave("./plots/p3.png", width = p_width, height = p_height+1)
+# ggsave("./plots/p3.pdf", width = 7.08, height = p_height)
 
 mp4 <- ggplot(enrich_res,
   aes(x = reorder(anno, log_est, decreasing = TRUE),
@@ -304,7 +304,7 @@ mp4 <- ggplot(enrich_res,
       margin = margin(t = 10, r = 0, b = 0, l = 0)),
     axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s12.png", , width = p_width-1, height = p_height)
+# ggsave("./plots/s21.png", , width = p_width-1, height = p_height)
 
 # alpha tss
 df_pip <- rnaseq_tss %>%
@@ -339,7 +339,7 @@ ggplot(df_pip, aes(x = bins, y = avg_signal, color=study)) +
     axis.title=element_text(face="bold", size = 8),
     axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s13.png", , width = p_width-1.5, height = p_height+2)
+# ggsave("./plots/s22.png", , width = p_width-1.5, height = p_height+2)
 
 # single effect enrichment
 rnaseq_alpha <- rnaseq_enrich %>%
@@ -474,9 +474,9 @@ m2 <- ggplot(anno_alpha_chiou,
     axis.text = element_text(face = "bold", size = 8))
 
 ggarrange(m1, m2, nrow=1, widths=c(1,2), align = "h", common.legend = TRUE,
-  legend = "bottom")
+  legend = "bottom", labels = c("a", "b"))
 
-# ggsave("./plots/s14.png", , width = p_width+3, height = p_height+5)
+# ggsave("./plots/s23.png", , width = p_width+3, height = p_height+5)
 
 
 # creating tables
@@ -893,7 +893,7 @@ ggplot(total_dist, aes(x = CSIndex, y = mval, color = study)) +
     axis.title=element_text(face="bold", size = 8),
     axis.text = element_text(face = "bold", size = 8))
 
-# ggsave("./plots/s15.png", width = p_width-3, height = p_height+3)
+# ggsave("./plots/s24.png", width = p_width-3, height = p_height+3)
 
 
 two_dist <- rnaseq_cov %>%

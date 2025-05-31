@@ -123,7 +123,7 @@ max_counts <- max(df_ld1$counts, df_ld2$counts, df_ld3$counts)
 df_pairs <- tibble("chrom1" = target_chrom, "start1" = snp_pos, "end1" = snp_pos,
   "chrom2" = target_chrom, "start2" = snp_pos, "end2" = snp_pos)
 
-png(filename="./plots/s16.png", width = 7, height = 5.6, units="in", res=300)
+pdf("./plots/s25.pdf", width = 7, height = 5.6)
 
 base_height <- 0.5
 v_space <- 0.1
@@ -136,7 +136,7 @@ annot_font_size <- 6
 
 pageCreate(width = 7, height = 5.6, default.units = "inches")
 
-plotText(label = "A", x = 0.1, y = 0.1,
+plotText(label = "a", x = 0.1, y = 0.1,
   fontsize = legend_font_size, fontface = "bold", just = "center",
   default.units = "inches")
 
@@ -206,9 +206,9 @@ p1 <- plotManhattan(
   leadSNP = list(snp = "", pch = 18, cex = 0.6, fill = "red"),
   fill=colorby("LDgrp",
     palette = colorRampPalette(c(
-      "grey", "#66c2a4",
-      "#41ae76", "#238b45", "#006d2c",
-      "#00441b", "red"
+      "grey", "#a6bddb",
+      "#74a9cf", "#3690c0", "#0570b0",
+      "#045a8d", "red"
     ))), assembly = "hg38", x = 0.5, y = 1.1 +super_base, width = figure_width,
   height = base_height)
 
@@ -223,9 +223,9 @@ p2 <- plotManhattan(
   leadSNP = list(snp = "", pch = 18, cex = 0.6, fill = "red"),
   fill=colorby("LDgrp",
     palette = colorRampPalette(c(
-      "grey", "#66c2a4",
-      "#41ae76", "#238b45", "#006d2c",
-      "#00441b", "red"
+      "grey", "#a6bddb",
+      "#74a9cf", "#3690c0", "#0570b0",
+      "#045a8d", "red"
     ))),
   assembly = "hg38", x = 0.5, y = 1.1 +super_base + v_space + base_height,
   width = figure_width, height = base_height)
@@ -242,9 +242,9 @@ p3 <- plotManhattan(
   leadSNP = list(snp = "", pch = 18, cex = 0.6, fill = "red"),
   fill=colorby("LDgrp",
     palette = colorRampPalette(c(
-      "grey", "#66c2a4",
-      "#41ae76", "#238b45", "#006d2c",
-      "#00441b", "red"
+      "grey", "#a6bddb",
+      "#74a9cf", "#3690c0", "#0570b0",
+      "#045a8d", "red"
     ))),
   assembly = "hg38", x = 0.5,
   y = 1.1 +super_base + v_space*2 + base_height*2,
@@ -272,8 +272,9 @@ plotLegend(
     "0.6-0.75",
     "0.75-1"
   ),
-  fill = c("red", "grey", "#66c2a4", "#41ae76", "#238b45",
-    "#006d2c", "#00441b"),
+  fill = c("red", "grey", "#a6bddb",
+    "#74a9cf", "#3690c0", "#0570b0",
+    "#045a8d"),
   cex = 0.9,
   pch = c(18, 19, 19, 19,19, 19,19), border = FALSE, x = 2, y = 3.15,
   width = 1.5, height = 0.6, fontface = "bold",just = "center",
@@ -300,7 +301,7 @@ p5 <- plotGenes(assembly = "hg38", chrom = target_chrom, chromstart = target_tss
   y = 1.1 +super_base + v_space*4 + base_height*3.75 +0.2,
   width=figure_width, height = base_height)
 
-plotText(label = "B", x = 0.1, y = 1.1 +super_base + v_space*4 + base_height*4.75+0.2,
+plotText(label = "b", x = 0.1, y = 1.1 +super_base + v_space*4 + base_height*4.75+0.2,
   fontsize = legend_font_size, fontface = "bold", just = "center",
   default.units = "inches")
 

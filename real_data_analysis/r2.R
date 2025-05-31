@@ -6,6 +6,12 @@ source("./utils.R")
 # change the data folder to the zenodo-downloaded data folder
 data_folder <- "~/Downloads/sushie_real_data_results/all_results/"
 
+rnaseq_her <- read_tsv(glue("{data_folder}/rnaseq_her.tsv.gz"))
+
+proteins_her <-
+  read_tsv(glue("{data_folder}/proteins_her.tsv.gz"))
+
+genoa_her <- read_tsv(glue("{data_folder}/genoa_her.tsv.gz"))
 
 rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz")) %>%
   filter(!is.na(snp)) %>%
@@ -320,7 +326,7 @@ df_r2_comp <- r2_res_plot %>%
         se_low = mval - 1.96 * sd(value)/sqrt(n())) %>%
       mutate(class = "heter")) %>%
   mutate(class = factor(class, levels = c("all", "heter"),
-    labels = c("A: All e/pGenes", "B:e/pGenes Exhibited Heterogeneity")),
+    labels = c("a: All e/pGenes", "b:e/pGenes Exhibited Heterogeneity")),
     type = factor(type , levels = c("SuShiE-Indep", "Meta-SuSiE",
       "SuSiE", "MESuSiE", "Elastic Net", "LASSO", "gBLUP")))
 
@@ -349,7 +355,7 @@ ggplot(df_r2_comp,
     title = element_text(size = 10, face="bold"),
     axis.text.y =element_text(size = 8, face="bold"))
 
-# ggsave("./plots/s25.png", width = p_width, height = p_height+2)
+# ggsave("./plots/s34.png", width = p_width, height = p_height+2)
 
 df_r2_cross <- bind_rows(rnaseq_r2,
   proteins_r2,
@@ -386,5 +392,12 @@ ggplot(df_r2_cross, aes(x=name, y = mval, color=name)) +
     axis.text=element_text(size = 8, face="bold"),
     text=element_text(size = 8))
 
-# ggsave("./plots/s26.png", width = p_width/2, height = p_height)
+# ggsave("./plots/s35.png", width = p_width/2, height = p_height)
+
+df_r2_cross_val <- bind_rows(rnaseq_r2,
+  proteins_r2,
+  genoa_r2) %>%
+  filter(name %in% c("sushie", "cross"))
+
+tidy(lm(value ~ name+study, df_r2_cross_val))
 

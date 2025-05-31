@@ -34,7 +34,7 @@ for (study_name in studies) {
           filter(Category %in% "L2_1") %>%
           select(Category, Prop._SNPs, Coefficient, Coefficient_std_error, `Coefficient_z-score`)
         colnames(tmp_df) <- c("cate", "p", "tau", "tau_se", "tau_z")
-        tmp_log <- read_lines(glue("{ldsc_outout_folder}/{trait_name}.{study_name}_{method_name}_{type_name}.bed.baselineLD.log")) 
+        tmp_log <- read_lines(glue("{ldsc_output_folder}/{trait_name}.{study_name}_{method_name}_{type_name}.bed.baselineLD.log")) 
         
         h2g <- as.numeric(gsub(" (.+)", "", gsub("Total Observed scale h2\\: ", "",
           tmp_log[grepl("scale h2", tmp_log)])))
@@ -115,7 +115,7 @@ ggplot(summ_res,
     axis.text=element_text(size = 8, face="bold"),
     text=element_text(size = 8))
 
-# ggsave("./plots/s29.png", width = p_width-2, height = p_height+1)
+# ggsave("./plots/s38.png", width = p_width-2, height = p_height+1)
 
 enrich_comp <- summ_res %>%
   filter(method != "sushie") %>%

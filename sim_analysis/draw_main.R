@@ -175,9 +175,9 @@ small_p6 <- ggplot(df_twas,
   theme_sim()
 
 ggarrange(small_p1, small_p2, small_p3, small_p4, small_p5, small_p6,
-  nrow = 3, ncol = 2, labels = c("A", "B", "C", "D", "E", "F"),
+  nrow = 3, ncol = 2, labels = c("a", "b", "c", "d", "e", "f"),
   common.legend = TRUE, legend="bottom", font.label = list(size=8))
 
-# ggsave(filename = "./manuscript_plots/p2.png", width = p_width, height = 6)
+# ggsave(filename = "./manuscript_plots/p2.pdf", width = p_width, height = 5.5)
 
 

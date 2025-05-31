@@ -9,7 +9,6 @@ data_folder <- "~/Downloads/sushie_real_data_results/all_results/"
 metadata_folder <- "~/Downloads/sushie_real_data_results/metadata/"
 constraint_folder <- "~/Downloads/sushie_real_data_results/constraint_score/"
 
-
 rnaseq_cov <- read_tsv(glue("{data_folder}/rnaseq_normal.sushie_cs.tsv.gz"))
 
 proteins_cov <- read_tsv(glue("{data_folder}/proteins_normal.sushie_cs.tsv.gz"))
@@ -310,10 +309,10 @@ p8 <- ggplot(filter(genoa_her, ancestry == 2  & trait %in% genoa_genes$trait),
     axis.text=element_text(size = 7, face="bold"))
 
 ggarrange(p1, p2, p3, p4, p5, p6, p7, p8,
-  nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G", "H"),
+  nrow=3, ncol=3, labels = c("a", "b", "c", "d", "e", "f", "g", "h"),
   legend.grob = leg, legend = "bottom")
 
-# ggsave("./plots/s17.png", width = p_width+1, height = p_height+5)
+# ggsave("./plots/s26.png", width = p_width+1, height = p_height+5)
 
 slo <- tidy(lm(df_rnaseq_her$ancestry_1 ~ df_rnaseq_her$ancestry_2))[2,2]$estimate
 
@@ -449,7 +448,7 @@ p7 <- ggplot(df_proteins_her, aes(x = ancestry_1,
     axis.text=element_text(size = 7, face="bold"))
 
 ggarrange(p1, p2, p3, p4, p5, p6, p7,
-  nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G"),
+  nrow=3, ncol=3, labels = c("a", "b", "c", "d", "e", "f", "g"),
   legend.grob = leg, legend = "bottom")
 
 tidy(cor.test(
@@ -464,7 +463,7 @@ tidy(cor.test(
   c(df_rnaseq_her$ancestry_3, df_proteins_her$ancestry_3),
   c(df_rnaseq_her$ancestry_2, df_proteins_her$ancestry_2)))
 
-# ggsave("./plots/s18.png", width = p_width+1, height = p_height+5)
+# ggsave("./plots/s27.png", width = p_width+1, height = p_height+5)
 
 # correlation
 rnaseq_corr <-
@@ -565,7 +564,7 @@ ggarrange(pp1, pp2, pp3, nrow=3, align = "v", label.y = 0.95, label.x = 0.05,
   font.label = list(size = 10),
   legend = "bottom", common.legend = TRUE)
 
-# ggsave("./plots/s19.png", width = p_width-3, height = p_height+3)
+# ggsave("./plots/s28.png", width = p_width-3, height = p_height+3)
 
 # all
 bind_rows(rnaseq_corr %>%
@@ -812,10 +811,10 @@ p7 <- ggplot(genoa_w, aes(x = ancestry1_sushie_weight,
     axis.text=element_text(size = 7, face="bold"))
 
 ggarrange(p1, p2, p3, p4, p5, p6, p7,
-  nrow=3, ncol=3, labels = c("A", "B", "C", "D", "E", "F", "G"),
+  nrow=3, ncol=3, labels = c("a", "b", "c", "d", "e", "f", "g"),
   legend.grob = leg, legend = "bottom")
 
-# ggsave("./plots/s20.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s29.png", , width = p_width+1, height = p_height+5)
 
 # correlation heterogenity
 
@@ -867,7 +866,7 @@ ggplot(df_dens, aes(x = value, color = study, fill = study)) +
     title = element_text(size = 10, face="bold"),
     axis.text=element_text(size = 8, face="bold"))
 
-# ggsave("./plots/s21.png", , width = p_width+1, height = p_height+5)
+# ggsave("./plots/s30.png", , width = p_width+1, height = p_height+5)
 
 df_eds <- read_tsv(glue("{constraint_folder}/df_eds.tsv"))
 df_pli <- read_tsv(glue("{constraint_folder}/df_pli_new.tsv"))
@@ -1154,25 +1153,6 @@ total_comp <- normal_comp %>%
 
 # write_tsv(total_comp %>% select(-type), "./tables/m1.tsv", col_names=FALSE)
 
-library(gt)
-
-total_comp |>
-  gt(rowname_col = "type") |>
-  cols_label(
-    s_het =  html("<b>s<sub>het</sub></b>"),
-    RVIS =  html("<b>RVIS</b>"),
-    EDS =  html("<b>EDS</b>"),
-    pLI =  html("<b>pLI</b>"),
-    LOEUF =  html("<b>LOEUF</b>"),
-  ) |>
-  cols_align(
-    align ="center",
-    columns = everything()
-  ) |>
-  cols_width(type ~ px(150),
-    everything() ~ px(200)) |>
-  gtsave("tab_1.rtf")
-
 # heritability vs constraint
 
 df_her_cons <- rnaseq_her %>%
@@ -1222,7 +1202,6 @@ genoa_qtl <- genoa_cov %>%
   mutate(study = "genoa.mrna")
 
 all_qtl <- bind_rows(rnaseq_qtl, proteins_qtl, genoa_qtl)
-
 
 # distance info
 rnaseq_ref <- read_tsv(glue("{metadata_folder}/mesa_rnaseq_gene_list_noMHC.tsv"), col_names = FALSE) %>%
@@ -1402,7 +1381,7 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     legend.key.size = unit(0.4, 'cm'),
     axis.text=element_text(size = 5, face="bold")) 
 
-# ggsave("./plots/s22.png", width = p_width/1.75, height = p_height+1)
+# ggsave("./plots/s31.png", width = p_width/1.75, height = p_height+1)
 
 df_n_qtl <- df_all %>%
   filter(type == "PIP-weighted Distance (kb) to TSS") %>%
@@ -1439,7 +1418,7 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     legend.key.size = unit(0.4, 'cm'),
     axis.text=element_text(size = 5, face="bold")) 
 
-# ggsave("./plots/s23.png", width = p_width/1.75, height = p_height+1)
+# ggsave("./plots/s32.png", width = p_width/1.75, height = p_height+1)
 
 df_n_qtl <- df_all %>%
   filter(grepl("Enrich", type)) %>%
@@ -1478,5 +1457,5 @@ ggplot(df_n_qtl, aes(x = stats, y = value)) +
     legend.key.size = unit(0.4, 'cm'),
     axis.text=element_text(size = 5, face="bold")) 
 
-# ggsave("./plots/s24.png", width = p_width/1.75, height = p_height+2)
+# ggsave("./plots/s33.png", width = p_width/1.75, height = p_height+2)
 

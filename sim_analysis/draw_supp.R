@@ -81,7 +81,7 @@ pp <- function(tt1, chvar, xlab, colors_type = method_colors){
     xlab(xlab) +
     theme_sim()
   
-  p <- ggarrange(p1, p2, p3, labels = c("A", "B","C"), nrow = 1,
+  p <- ggarrange(p1, p2, p3, labels = c("a", "b","c"), nrow = 1,
     font.label = list(size = 8), common.legend = TRUE, legend = "bottom")
   return(p)
 }
@@ -150,7 +150,7 @@ general_sim1 <- function(tt1, ylab, colors_type = method_colors) {
     xlab("Effect size corr. across ancestries") +
     theme_sim()
   
-  p <- ggarrange(p2, p3, p4, labels = c("A", "B", "C"), nrow=1,
+  p <- ggarrange(p2, p3, p4, labels = c("a", "b", "c"), nrow=1,
     font.label = list(size = 8), common.legend = TRUE, legend = "bottom")
   return(p)
 }
@@ -221,7 +221,7 @@ general_sim2 <- function(tt1, ylab, colors_type = method_colors){
     xlab("Effect size corre. across ancestries") +
     theme_sim()
   
-  p <- ggarrange(p2, p3, p4, labels = c("A", "B", "C"), nrow=1,
+  p <- ggarrange(p2, p3, p4, labels = c("a", "b", "c"), nrow=1,
     font.label = list(size = 8), common.legend = TRUE, legend = "bottom")
   return(p)
 }
@@ -236,7 +236,6 @@ general_sim1(filter(df_tmp, type == "Calibration"), "Freq. of molQTLs in CS")
 
 
 # 2 population
-
 tt1 <- df_2pop  %>%
   filter(L1 == 2 & L2 ==2 & L3 == 0 & h2g == "0.05:0.05" & rho == 0.8) %>%
   filter(N %in% c("400:200", "400:400", "400:600", "400:800")) %>%
@@ -255,7 +254,6 @@ pp(tt1, "N", "Sample Size for 2nd Ancestry")
 # ggsave("./manuscript_plots/supp/s5.png", width = p_width, height = p_height+0.5)
 
 # different h2g
-
 tt2 <- df_2pop %>%
   filter(N == "400:400" & L1 == 2 & L2 ==2 & L3 == 0 & rho == 0.8) %>%
   filter(h2g %in% c("0.05:0.01", "0.05:0.05", "0.05:0.1", "0.05:0.2")) %>%
@@ -368,7 +366,7 @@ p_rho2 <- ggplot(rho_all2,
     axis.title=element_text(face="bold"),
     text=element_text(size = 10))
 
-ggarrange(p_rho1, p_rho2, ncol = 2, labels = c("A", "B"),
+ggarrange(p_rho1, p_rho2, ncol = 2, labels = c("a", "b"),
   common.legend = TRUE, legend = "bottom")
 
 # ggsave("./manuscript_plots/supp/s7.png", width = 5, height = 3)
@@ -386,7 +384,7 @@ tt3 %>%
   summarize(n = n())
 
 pp(tt3, "L3", "Number of AS molQTLs")
-# ggsave("./manuscript_plots/supp/s8.png", width = 10, height = 4)
+# ggsave("./manuscript_plots/supp/s17.png", width = 10, height = 4)
 
 # fdr
 load("./data/df_noshared.RData")
@@ -455,10 +453,10 @@ p_noshared3 <- ggplot(tmp_noshared3,
   theme_sim()
 
 ggarrange(p_noshared1, p_noshared2, p_noshared3,
-  labels = c("A", "B", "C"), nrow=1,
+  labels = c("a", "b", "c"), nrow=1,
   font.label = list(size = 8), common.legend = TRUE, legend = "bottom")
 
-# ggsave("./manuscript_plots/supp/s9.png", width = p_width, height = p_height+0.75)
+# ggsave("./manuscript_plots/supp/s18.png", width = p_width, height = p_height+1.25)
 
 pp_l2 <- function(tt1, chvar, xlab, colors_type = method_colors){
   envar = sym(chvar)
@@ -503,7 +501,7 @@ pp_l2 <- function(tt1, chvar, xlab, colors_type = method_colors){
     xlab(xlab) +
     theme_sim()
   
-  p <- ggarrange(p1, p2, p3, labels = c("A", "B","C"), nrow = 1,
+  p <- ggarrange(p1, p2, p3, labels = c("a", "b", "c"), nrow = 1,
     font.label = list(size = 8), common.legend = TRUE, legend = "bottom")
   return(p)
 }
@@ -521,7 +519,7 @@ tt4 %>%
 
 pp_l2(tt4, "L2", "Number of Inferred molQTLs")
 
-# ggsave("./manuscript_plots/supp/s10.png", width = p_width, height = p_height+0.5)
+# ggsave("./manuscript_plots/supp/s19.png", width = p_width, height = p_height+0.5)
 
 # twas r2 
 load("./data/df_r2twas.RData")
@@ -618,7 +616,7 @@ twas_h2ge <- ggplot(df_twas_h2ge,
 
 ggarrange(r2_n, r2_h2g, twas_n, twas_h2ge,
   common.legend = TRUE, legend = "bottom",
-  labels = c("A", "B", "C", "D"), font.label = list(size = 8))
+  labels = c("a", "b", "c", "d"), font.label = list(size = 8))
 
-# ggsave("./manuscript_plots/supp/s11.png", width = p_width, height = p_height+2)
+# ggsave("./manuscript_plots/supp/s20.png", width = p_width, height = p_height+2)
 

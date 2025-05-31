@@ -110,7 +110,7 @@ ggarrange(p1, p2, p3 , p4, common.legend = TRUE, legend = "bottom",
     "Number of cis-molQTLs", "Effect size correlation"),
   font.label = list(size = 8))
 
-# ggsave("./manuscript_plots/additional/s1.png", width = 12, height = 8)
+# ggsave("./manuscript_plots/additional/s8.png", width = 12, height = 8)
 
 #  calibration
 custom_labeller <- function(variable, value) {
@@ -141,7 +141,7 @@ ggplot(df_tmp , aes(x = m_val, y = obs, color = name)) +
   ylab("Observed") +
   theme_sim()
 
-# ggsave("./manuscript_plots/additional/s2.png", width = 10, height = 12)
+# ggsave("./manuscript_plots/additional/s9.png", width = 10, height = 12)
 
 df_tmp <- df_cali %>%
   filter(h2g %in% c("0.01:0.01", "0.05:0.05", "0.1:0.1", "0.2:0.2") &
@@ -164,7 +164,7 @@ ggplot(df_tmp , aes(x = m_val, y = obs, color = name)) +
   ylab("Observed") +
   theme_sim()
 
-# ggsave("./manuscript_plots/additional/s3.png", width = 10, height = 12)
+# ggsave("./manuscript_plots/additional/s10.png", width = 10, height = 12)
 
 df_tmp <- df_cali %>%
   filter(h2g %in%  "0.05:0.05" &
@@ -187,7 +187,7 @@ ggplot(df_tmp , aes(x = m_val, y = obs, color = name)) +
   ylab("Observed") +
   theme_sim()
 
-# ggsave("./manuscript_plots/additional/s4.png", width = 10, height = 12)
+# ggsave("./manuscript_plots/additional/s11.png", width = 10, height = 12)
 
 df_tmp <- df_cali %>%
   filter(h2g %in% "0.05:0.05" &
@@ -212,7 +212,7 @@ ggplot(df_tmp , aes(x = m_val, y = obs, color = name)) +
   ylab("Observed") +
   theme_sim()
 
-# ggsave("./manuscript_plots/additional/s5.png", width = 10, height = 12)
+# ggsave("./manuscript_plots/additional/s12.png", width = 10, height = 12)
 
 # cs vs generative L
 df_cs_pop2_tmp <- read_tsv(glue("{sim_data_path}/sushie_2pop_cs_all.tsv.gz"))
@@ -314,10 +314,10 @@ p4 <- ggplot(df_tmp , aes(x = factor(L2), y = mvalue, color = method)) +
   theme_sim()
 
 ggarrange(p1, p2, p4,  p3,
-  labels = c("A", "B", "C", "D"),
+  labels = c("a", "b", "c", "d"),
  common.legend = TRUE, legend = "bottom")
 
-# ggsave("./manuscript_plots/additional/s6.png", width = 6, height = 4)
+# ggsave("./manuscript_plots/additional/s13.png", width = 6, height = 4)
 
 df_num_cs <- df_cs_pop2_tmp %>%
   filter(L1 == L2) %>%
@@ -400,7 +400,7 @@ ggplot(df_tmp , aes(x = factor(L2), y = mvalue, color = method)) +
   xlab("Number of Single Effects Specified in Inference (L) with 2 causals") +
   theme_sim()
 
-# ggsave("./manuscript_plots/additional/s7.png", width = 4, height = 3.5)
+# ggsave("./manuscript_plots/additional/s14.png", width = 4, height = 3.5)
 
 df_num_cs <- df_cs_pop2_tmp %>%
   filter(L1 <= L2) %>%
@@ -550,9 +550,9 @@ p4 <- ggplot(df_tmp, aes(x = factor(rho), y = Power_mean, color = name)) +
   theme_sim()
 
 ggarrange(p1, p2, p3 , p4, common.legend = TRUE, legend = "bottom",
-  labels = c("A", "B", "C", "D"), font.label = list(size = 8))
+  labels = c("a", "b", "c", "d"), font.label = list(size = 8))
 
-# ggsave("./manuscript_plots/additional/s8.png", width = 6, height = 4)
+# ggsave("./manuscript_plots/additional/s15.png", width = 6, height = 4)
 
 df_res <- tibble()
 for (method_name in c("mesusie", "indep", "meta", "susie", "susiex",
@@ -662,9 +662,9 @@ p4 <- ggplot(df_tmp, aes(x = factor(rho), y = Power_mean, color = method)) +
   theme_sim()
 
 ggarrange(p1, p2, p3 , p4, common.legend = TRUE, legend = "bottom",
-  labels = c("A", "B", "C", "D"), font.label = list(size = 8))
+  labels = c("a", "b", "c", "d"), font.label = list(size = 8))
 
-# ggsave("./manuscript_plots/additional/s9.png", width = 6, height = 4)
+# ggsave("./manuscript_plots/additional/s16.png", width = 6, height = 4)
 
 df_res <- tibble()
 for (method_name in c("mesusie", "indep", "meta", "susie", "susiex",

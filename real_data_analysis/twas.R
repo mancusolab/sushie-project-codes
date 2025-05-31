@@ -139,7 +139,7 @@ ggplot(qq_twas, aes(sample = -log(p.value))) +
     axis.title=element_blank(),
     axis.text = element_text(face = "bold", size = 6)) 
 
-# ggsave("./plots/s27.png", width = p_width-1, height = p_height+3)
+# ggsave("./plots/s36.png", width = p_width-1, height = p_height+3)
 
 df_twas %>%
   filter(pheno %in% wbc_traits) %>%
@@ -274,12 +274,11 @@ tmp_meta <- bind_rows(
     filter(grepl("term", term))
 ) 
 
-
-
 tmp_meta$bs_se <- c(sd(c1_comp), sd(c2_comp))
 
 tmp_meta %>%
-  mutate(newp = pnorm(abs(estimate/bs_se), lower.tail = FALSE))
+  mutate(newp = pnorm(abs(estimate/bs_se), lower.tail = FALSE)) %>%
+  select(-p.value)
 
 tmp_meta %>%
   mutate(weight = 1/(bs_se^2)) %>%
@@ -337,7 +336,7 @@ ggplot(qq_twas2, aes(sample = -log(p.value))) +
     axis.title=element_blank(),
     axis.text = element_text(face = "bold", size = 6)) 
 
-# ggsave("./plots/s28.png", width = p_width-1, height = p_height+3)
+# ggsave("./plots/s37.png", width = p_width-1, height = p_height+3)
 
 df_eds <- read_tsv(glue("{constraint_folder}/df_eds.tsv"))
 df_pli <- read_tsv(glue("{constraint_folder}/df_pli_new.tsv"))
@@ -735,19 +734,5 @@ DD
 p1+p2 + p3+p1_legend+ plot_layout(design = try_design, guides = "collect") &
   theme(legend.position="none")
 
-# ggsave("./plots/p5.png", width = p_width-2, height = p_height+2)
-
-tidy(lm(sushie ~susie + study, main_twas1))
-
-tmp1 <- main_twas1 %>%
-  mutate(sushie2 = sushie^2,
-    susie2 = susie^2)
-
-tidy(t.test(tmp1$sushie2, tmp1$susie2, alternative = "greater"))
-
-tmp2 <- main_twas2 %>%
-  mutate(sushie2 = sushie^2,
-    mesusie2 = mesusie^2)
-
-tidy(t.test(tmp2$sushie2, tmp2$mesusie2, alternative = "greater"))
+# ggsave("./plots/p5.png", width = 7.08, height = p_height+2)
 
